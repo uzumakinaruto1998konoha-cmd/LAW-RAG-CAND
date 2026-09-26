@@ -1,20 +1,18 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 0 — Specification",
-  "current_task": "Review and approve Phase 0 baseline; resolve open architecture and policy decisions",
+  "current_phase": "PHASE 1 — Document Ingestion Engine",
+  "current_task": "Upload, hash, validation, job lifecycle",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
-    "Cross-check requirements, dependencies, contradictions, and undecided architecture choices"
+    "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
+    "Project owner approval of Phase 0 baseline (2026-09-26)",
+    "Define Phase 1 ingestion v1 formats, limits, local parser/OCR design, storage, review threshold, and corpus manifest"
   ],
   "pending_tasks": [
-    "Project owner resolves open decisions in 17_DECISION_LOG.md",
-    "Project owner approves the Phase 0 baseline",
-    "Define Phase 1 ingestion design after Phase 0 approval"
+    "Implement ingestion engine: upload, hash, validation, and job lifecycle"
   ],
-  "blockers": [
-    "Phase 0 cannot be considered approved until the project owner reviews open decisions and accepts the baseline"
-  ],
-  "architecture_version": "0.1-draft",
-  "last_change": "2026-09-26: Initial Phase 0 specification set created; no application code written",
-  "next_action": "Review the open decisions and approve the Phase 0 baseline; then start Phase 1 ingestion design"
+  "blockers": [],
+  "architecture_version": "0.2-ingestion-design",
+  "last_change": "2026-09-26: Phase 0 approved; Phase 1 ingestion design completed; no implementation dependencies installed",
+  "next_action": "Implement the first pending Phase 1 task: ingestion engine upload, hash, validation, and job lifecycle"
 }

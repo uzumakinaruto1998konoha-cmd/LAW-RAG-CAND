@@ -12,7 +12,8 @@ Kiến trúc modular monolith cho API và điều phối nghiệp vụ, cộng w
 - PostgreSQL: hồ sơ tài liệu và phiên bản, nội dung/định vị chuẩn, cấu trúc pháp lý, quan hệ, ACL/RBAC, job, cấu hình và audit.
 - Qdrant: vector theo chunk và phiên bản index; không phải nguồn duy nhất để tái dựng nội dung.
 - Ollama: inference tại chỗ; model cụ thể và năng lực tiếng Việt TBD.
-- File storage: lưu blob gốc/artefact. Loại lưu trữ (filesystem volume hay object-compatible tự host) TBD; không coi là thêm dịch vụ đã chốt.
+- File storage: persistent filesystem volume cho blob gốc/artefact; content-hash internal key, quarantine trước xử lý và atomic promote sau xác thực. PostgreSQL lưu storage key; backup gồm blob volume và PostgreSQL.
+- Ingestion v1: PyMuPDF (PDF), python-docx (DOCX), Pillow (ảnh), UTF-8 strict (text), Tesseract 5.x + Vietnamese `vie` traineddata cho OCR cục bộ. Dependency chỉ được cài sau license/phân phối review và pin phiên bản cụ thể. Ngưỡng OCR dưới 90/100, không có text hoặc lỗi validation dẫn tới review; không tự duyệt.
 
 ## 3. Luồng ingest
 Upload → kiểm tra loại/kích thước/hash → tạo Document/DocumentVersion → job → text extraction/OCR → chuẩn hóa và page mapping → parse cấu trúc/metadata/quan hệ → dedup và cảnh báo → review/approval → chunk version → embedding → upsert Qdrant → cập nhật index manifest/trạng thái. Bước lỗi có trạng thái, retry có kiểm soát và audit.
@@ -24,4 +25,4 @@ UI → xác thực/RBAC → chuẩn hóa câu hỏi và bộ lọc → truy vấ
 LAN/offline là mục tiêu. Không có kết nối cloud mặc định. File upload không tin cậy; kiểm tra và cách ly trước xử lý. Quyền áp dụng ở truy vấn dữ liệu và lớp ứng dụng; không dựa riêng vào lọc UI. Secrets lấy từ cấu hình triển khai an toàn, không commit/hard-code. Backup gồm PostgreSQL, blob và cấu hình/manifest; Qdrant có thể snapshot hoặc tái lập theo chính sách TBD.
 
 ## 6. Quyết định cần khóa
-Xem `17_DECISION_LOG.md`: lưu blob, OCR/parser, embedding/reranker/LLM, BM25 backend trong PostgreSQL, auth, hàng đợi, phân loại ACL và mức bảo đảm offline. Không tự ý thay đổi stack đã nêu.
+Xem `17_DECISION_LOG.md`: ingestion storage/OCR/parser được chốt cho thiết kế v1; embedding/reranker/LLM, BM25 backend trong PostgreSQL, auth, hàng đợi, phân loại ACL và mức bảo đảm offline còn mở. Không tự ý thay đổi stack đã nêu.

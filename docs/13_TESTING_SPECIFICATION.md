@@ -15,6 +15,8 @@ Thiết kế kiểm thử theo requirement và rủi ro, thực hiện từ unit
 ## 3. Dữ liệu đánh giá
 Tập kiểm thử có tài liệu chuẩn hóa/đã cấp quyền, truy vấn, evidence gold, answer rubric và expected warnings; chuyên gia pháp chế xác nhận. Dữ liệu nhạy cảm phải được xử lý theo chính sách chưa chốt.
 
+Corpus cho ingestion v1 được định nghĩa bằng manifest ở `docs/05_DOCUMENT_INGESTION_SPECIFICATION.md`, bao gồm PDF text/scan/mixed, OCR tiếng Việt thẳng/xoay/mờ, DOCX nhiều trang, JPG/PNG, UTF-8, file hỏng, MIME giả, vượt giới hạn và exact duplicate. Mỗi fixture cần hash, nhãn expected page/text/metadata/hierarchy/review, quyền sử dụng và người duyệt; không đưa nội dung luật tự tạo vào source code.
+
 ## 4. Tiêu chí release
 Traceability requirement-to-test; không có lỗi blocker về ACL leakage, citation bịa, mất dữ liệu hoặc restore; ngưỡng chất lượng/hiệu năng và người ký duyệt TBD. Không coi LLM judge là bằng chứng duy nhất.
 

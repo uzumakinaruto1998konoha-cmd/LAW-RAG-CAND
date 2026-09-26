@@ -4,8 +4,8 @@
 |---|---|---|---|---|---|---|
 | PHASE 0 | Baseline | Tạo bộ đặc tả ban đầu | Done | P0 | — | 18 tài liệu + state; liên kết yêu cầu/kiến trúc |
 | PHASE 0 | Review | Rà soát consistency, conflict, dependency | Done | P0 | Baseline | Findings được ghi; không code |
-| PHASE 0 | Decisions | Chốt TBD và phê duyệt baseline | Pending | P0 | Review | Decision log có quyết định/owner; Phase 0 được chấp thuận |
-| PHASE 1 | Ingestion design | Chốt formats, giới hạn, OCR/parser và lưu trữ | Pending | P0 | Phase 0 approval | Có lựa chọn/version, ngưỡng review, test corpus |
+| PHASE 0 | Decisions | Chốt TBD và phê duyệt baseline | Done | P0 | Review | Project owner xác nhận Phase 0 baseline được chấp thuận trong phiên 2026-09-26; TBD chưa thuộc ingestion vẫn tiếp tục theo Decision Log |
+| PHASE 1 | Ingestion design | Chốt formats, giới hạn, OCR/parser và lưu trữ | Done | P0 | Phase 0 approval | Lựa chọn ingestion v1, ngưỡng review và corpus manifest được ghi ở docs/05, ADR-004..006, docs/13 |
 | PHASE 1 | Ingestion engine | Upload, hash, validation, job lifecycle | Pending | P0 | Ingestion design | Idempotent, audit, lỗi an toàn |
 | PHASE 1 | Extraction | PDF/DOCX/text/image extraction và OCR | Pending | P0 | Ingestion engine; OCR decision | Page mapping, confidence, review path |
 | PHASE 1 | Legal parsing | Metadata + hierarchy + relation candidates | Pending | P0 | Extraction; legal schema | Node/provenance/confidence; reviewer workflow |
@@ -22,4 +22,4 @@
 | PHASE 7 | Quality | Automated/manual and RAG evaluation | Pending | P0 | Features complete; gold set | Release gates documented and met |
 | PHASE 8 | Operations | Compose, backup/restore, offline runbook | Pending | P0 | Deployment decisions | Repeatable deployment and restore drill |
 
-**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Board là kế hoạch; chưa task triển khai nào ngoài Phase 0 được bắt đầu.
+**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Task tiếp theo là PHASE 1 Ingestion engine; chưa bắt đầu trong lần này.
