@@ -1,0 +1,20 @@
+{
+  "project_name": "LAW-RAG-CAND",
+  "current_phase": "PHASE 0 — Specification",
+  "current_task": "Review and approve Phase 0 baseline; resolve open architecture and policy decisions",
+  "completed_tasks": [
+    "Create the 18 requested Phase 0 specification and planning documents",
+    "Cross-check requirements, dependencies, contradictions, and undecided architecture choices"
+  ],
+  "pending_tasks": [
+    "Project owner resolves open decisions in 17_DECISION_LOG.md",
+    "Project owner approves the Phase 0 baseline",
+    "Define Phase 1 ingestion design after Phase 0 approval"
+  ],
+  "blockers": [
+    "Phase 0 cannot be considered approved until the project owner reviews open decisions and accepts the baseline"
+  ],
+  "architecture_version": "0.1-draft",
+  "last_change": "2026-09-26: Initial Phase 0 specification set created; no application code written",
+  "next_action": "Review the open decisions and approve the Phase 0 baseline; then start Phase 1 ingestion design"
+}
