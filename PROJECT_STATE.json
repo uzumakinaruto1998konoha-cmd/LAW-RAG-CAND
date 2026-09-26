@@ -1,19 +1,20 @@
 {
   "project_name": "LAW-RAG-CAND",
   "current_phase": "PHASE 1 — Document Ingestion Engine",
-  "current_task": "PDF/DOCX/text/image extraction and OCR",
+  "current_task": "Metadata, legal hierarchy, and relation candidates with provenance/confidence",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
     "Project owner approval of Phase 0 baseline (2026-09-26)",
     "Define Phase 1 ingestion v1 formats, limits, local parser/OCR design, storage, review threshold, and corpus manifest",
-    "Implement ingestion engine upload, hash, validation, PostgreSQL job lifecycle, audit, and exact deduplication"
+    "Implement ingestion engine upload, hash, validation, PostgreSQL job lifecycle, audit, and exact deduplication",
+    "Implement PDF/DOCX/text/image extraction and local OCR with page mapping, confidence, and review path"
   ],
   "pending_tasks": [
-    "Implement extraction for PDF/DOCX/text/images and local OCR with page mapping, confidence, and review path"
+    "Implement legal metadata, hierarchy, and relation candidate parsing with provenance/confidence and review workflow"
   ],
   "blockers": [],
-  "architecture_version": "0.3-ingestion-engine",
-  "last_change": "2026-09-26: Phase 1 ingestion upload/hash/validation/job lifecycle implemented; 14 unit tests passed; no external package installed",
-  "next_action": "Implement the next pending Phase 1 task: PDF/DOCX/text/image extraction and local OCR"
+  "architecture_version": "0.4-extraction",
+  "last_change": "2026-09-26: Phase 1 extraction for PDF/DOCX/text/images and local Tesseract adapter implemented; 26 unit tests passed; no packages installed during task",
+  "next_action": "Implement the next pending Phase 1 task: legal metadata, hierarchy, and relation candidate parsing"
 }

@@ -6,6 +6,8 @@ Docker Compose trên host Windows/Linux TBD trong LAN; trải nghiệm phát tri
 ## 2. Cấu hình
 Profile dev/staging/production TBD; cấu hình qua environment/secret mounts, không commit secret. Pin image/model/version, health checks, persistent volumes, network segmentation và resource limits cần định nghĩa. Model được nạp cục bộ; hướng chuyển model offline TBD.
 
+Ingestion extraction cần Python packages đã pin trong `requirements.txt` và Tesseract OCR 5.5.3 cài local cùng `vie.traineddata`. Gói offline phải giữ binary/model tương ứng và checksum; runtime ghi phiên bản engine và traineddata hash vào provenance. PyMuPDF AGPL v3 đã được duyệt cho triển khai nội bộ; tái phân phối cần rà soát điều kiện license.
+
 ## 3. Offline/LAN
 Runtime không phụ thuộc cloud. Cài mới/cập nhật qua gói đã kiểm tra và chuyển vào LAN theo quy trình chủ dự án duyệt; cần xác minh license và checksum. TLS nội bộ, DNS, firewall, backup target và client access TBD.
 

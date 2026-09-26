@@ -32,3 +32,15 @@ class InvalidTransitionError(IngestionError):
 
 class StorageError(IngestionError):
     code = "STORAGE_FAILURE"
+
+
+class ExtractionError(IngestionError):
+    code = "EXTRACTION_FAILURE"
+
+
+class EncryptedDocumentError(ExtractionError):
+    code = "DOCUMENT_ENCRYPTED"
+
+
+class OCRUnavailableError(ExtractionError):
+    code = "OCR_UNAVAILABLE"

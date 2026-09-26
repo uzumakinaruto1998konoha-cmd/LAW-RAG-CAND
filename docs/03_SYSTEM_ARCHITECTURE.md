@@ -14,7 +14,7 @@ Kiến trúc modular monolith cho API và điều phối nghiệp vụ, cộng w
 - Qdrant: vector theo chunk và phiên bản index; không phải nguồn duy nhất để tái dựng nội dung.
 - Ollama: inference tại chỗ; model cụ thể và năng lực tiếng Việt TBD.
 - File storage: persistent filesystem volume cho blob gốc/artefact; content-hash internal key, quarantine trước xử lý và atomic promote sau xác thực. PostgreSQL lưu storage key; backup gồm blob volume và PostgreSQL.
-- Ingestion v1: PyMuPDF (PDF), python-docx (DOCX), Pillow (ảnh), UTF-8 strict (text), Tesseract 5.x + Vietnamese `vie` traineddata cho OCR cục bộ. Dependency chỉ được cài sau license/phân phối review và pin phiên bản cụ thể. Ngưỡng OCR dưới 90/100, không có text hoặc lỗi validation dẫn tới review; không tự duyệt.
+- Ingestion v1: PyMuPDF 1.28.2 (PDF), python-docx 1.2.0 (DOCX), Pillow 12.3.0 (ảnh), UTF-8 strict (text), Tesseract 5.5.3 + Vietnamese `vie` traineddata (OCR cục bộ). PyMuPDF AGPL v3 được chủ dự án chấp thuận cho triển khai nội bộ; python-docx MIT, Pillow MIT-CMU, Tesseract/model Apache-2.0. OCR mean dưới 90/100, không có text hoặc lỗi OCR dẫn tới review; không tự duyệt.
 
 ## 3. Luồng ingest
 Upload → kiểm tra loại/kích thước/hash → tạo Document/DocumentVersion → job → text extraction/OCR → chuẩn hóa và page mapping → parse cấu trúc/metadata/quan hệ → dedup và cảnh báo → review/approval → chunk version → embedding → upsert Qdrant → cập nhật index manifest/trạng thái. Bước lỗi có trạng thái, retry có kiểm soát và audit.

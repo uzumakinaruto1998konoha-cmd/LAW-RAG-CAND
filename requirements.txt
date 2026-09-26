@@ -1,0 +1,5 @@
+# Local-first extraction dependencies. Bundle these pinned wheels for offline setup.
+# PyMuPDF is AGPL v3; project owner approved this for internal deployment.
+PyMuPDF==1.28.2
+python-docx==1.2.0
+Pillow==12.3.0

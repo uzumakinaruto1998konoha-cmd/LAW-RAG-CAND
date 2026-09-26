@@ -15,3 +15,9 @@
 - Thêm lõi upload/validation/hash, filesystem content-addressed storage, exact dedup/idempotency, trạng thái/retry job, PostgreSQL DB-API adapter, migration và audit sink.
 - Thêm unit tests cho định dạng, giới hạn, lỗi, storage/job lifecycle; 14 test đạt. Không cài dependency ngoài.
 - Chốt ADR-003 dùng bảng PostgreSQL không broker; cập nhật kiến trúc, TASK_BOARD và PROJECT_STATE. Task tiếp theo: extraction/OCR.
+
+## 2026-09-26 — Phase 1 extraction
+- Thêm trích xuất PDF (page/text/bbox, mixed scan OCR), DOCX paragraph/table/source locator, UTF-8 text và JPG/PNG OCR; lưu confidence, tool versions, traineddata SHA-256, pipeline version và review warnings.
+- Pin PyMuPDF 1.28.2, python-docx 1.2.0, Pillow 12.3.0; yêu cầu Tesseract 5.5.3 + `vie`. Project owner chấp thuận PyMuPDF AGPL v3 cho triển khai nội bộ. Không tải/cài package hay binary trong task.
+- 26 unit tests và compile check đạt. Tesseract chưa có trên máy hiện tại; OCR được kiểm tra bằng adapter giả và đường thiếu-engine/review, cần chạy golden corpus OCR trong môi trường đã đóng gói binary/model.
+- Cập nhật ADR-005, đặc tả ingestion, kiến trúc, deployment/testing spec, task board và project state. Task tiếp theo: legal parsing.

@@ -7,7 +7,7 @@
 | PHASE 0 | Decisions | Chốt TBD và phê duyệt baseline | Done | P0 | Review | Project owner xác nhận Phase 0 baseline được chấp thuận trong phiên 2026-09-26; TBD chưa thuộc ingestion vẫn tiếp tục theo Decision Log |
 | PHASE 1 | Ingestion design | Chốt formats, giới hạn, OCR/parser và lưu trữ | Done | P0 | Phase 0 approval | Lựa chọn ingestion v1, ngưỡng review và corpus manifest được ghi ở docs/05, ADR-004..006, docs/13 |
 | PHASE 1 | Ingestion engine | Upload, hash, validation, job lifecycle | Done | P0 | Ingestion design | Exact duplicate/idempotency; signature/size validation; immutable blob; PostgreSQL job state + audit; safe errors; 14 unit tests pass |
-| PHASE 1 | Extraction | PDF/DOCX/text/image extraction và OCR | Pending | P0 | Ingestion engine; OCR decision | Page mapping, confidence, review path |
+| PHASE 1 | Extraction | PDF/DOCX/text/image extraction và OCR | Done | P0 | Ingestion engine; OCR decision | Page/bbox mapping; OCR confidence/version/traineddata hash; <90/no text/missing engine → review; 26 unit tests pass |
 | PHASE 1 | Legal parsing | Metadata + hierarchy + relation candidates | Pending | P0 | Extraction; legal schema | Node/provenance/confidence; reviewer workflow |
 | PHASE 1 | Release to KB | Approval, dedup, version and processing run | Pending | P0 | Legal parsing; schema | Bản chưa duyệt không được retrieve |
 | PHASE 2 | Knowledge model | Implement document/legal schema and ACL | Pending | P0 | Phase 1 design; decisions | Version/time/history constraints |
@@ -22,4 +22,4 @@
 | PHASE 7 | Quality | Automated/manual and RAG evaluation | Pending | P0 | Features complete; gold set | Release gates documented and met |
 | PHASE 8 | Operations | Compose, backup/restore, offline runbook | Pending | P0 | Deployment decisions | Repeatable deployment and restore drill |
 
-**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Task tiếp theo là PHASE 1 Extraction (PDF/DOCX/text/image extraction và OCR); chưa bắt đầu trong lần này.
+**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Task tiếp theo là PHASE 1 Legal parsing (metadata + hierarchy + relation candidates); chưa bắt đầu trong lần này.
