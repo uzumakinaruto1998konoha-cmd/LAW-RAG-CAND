@@ -3,12 +3,13 @@
 ## 1. Baseline đề xuất
 Kiến trúc modular monolith cho API và điều phối nghiệp vụ, cộng worker ingestion riêng trong cùng codebase/deployment; giao tiếp qua PostgreSQL và hàng đợi bền vững do PostgreSQL điều phối ở baseline. PostgreSQL là nguồn dữ liệu chuẩn cho tài liệu, cấu trúc, metadata, ACL, trạng thái công việc và audit. Qdrant giữ vector có tham chiếu tới chunk/version; index có thể táu tạo. Ollama phục vụ embedding/LLM cục bộ theo lựa chọn model. React/TypeScript gọi FastAPI. Docker Compose điều phối dịch vụ.
 
-> Hàng đợi PostgreSQL là đề xuất cần chốt; không thêm broker/framework cho tới khi quyết định.
+> Ingestion jobs dùng bảng PostgreSQL `ingestion_job`; không thêm broker/framework. Worker claim/lease và recovery cần được chốt trước khi bật worker production.
 
 ## 2. Thành phần và trách nhiệm
 - Web UI: đăng nhập, tra cứu/chat, quản trị tài liệu, duyệt extraction, quản lý người dùng/index/audit theo quyền.
 - FastAPI: xác thực/ủy quyền, API, orchestration retrieval/RAG, kiểm tra citation, quản trị.
 - Ingestion worker: nhận job, kiểm tra file, trích xuất/OCR, cấu trúc, metadata, dedup, chờ duyệt và lập index.
+- Ingestion job/audit: PostgreSQL giữ trạng thái job và audit event; migration `migrations/0001_ingestion_engine.sql`; connection factory được wiring từ runtime, không ép driver vào package domain.
 - PostgreSQL: hồ sơ tài liệu và phiên bản, nội dung/định vị chuẩn, cấu trúc pháp lý, quan hệ, ACL/RBAC, job, cấu hình và audit.
 - Qdrant: vector theo chunk và phiên bản index; không phải nguồn duy nhất để tái dựng nội dung.
 - Ollama: inference tại chỗ; model cụ thể và năng lực tiếng Việt TBD.
@@ -25,4 +26,4 @@ UI → xác thực/RBAC → chuẩn hóa câu hỏi và bộ lọc → truy vấ
 LAN/offline là mục tiêu. Không có kết nối cloud mặc định. File upload không tin cậy; kiểm tra và cách ly trước xử lý. Quyền áp dụng ở truy vấn dữ liệu và lớp ứng dụng; không dựa riêng vào lọc UI. Secrets lấy từ cấu hình triển khai an toàn, không commit/hard-code. Backup gồm PostgreSQL, blob và cấu hình/manifest; Qdrant có thể snapshot hoặc tái lập theo chính sách TBD.
 
 ## 6. Quyết định cần khóa
-Xem `17_DECISION_LOG.md`: ingestion storage/OCR/parser được chốt cho thiết kế v1; embedding/reranker/LLM, BM25 backend trong PostgreSQL, auth, hàng đợi, phân loại ACL và mức bảo đảm offline còn mở. Không tự ý thay đổi stack đã nêu.
+Xem `17_DECISION_LOG.md`: ingestion storage/OCR/parser/job persistence được chốt cho v1; embedding/reranker/LLM, BM25 backend trong PostgreSQL, auth, phân loại ACL và mức bảo đảm offline còn mở. Không tự ý thay đổi stack đã nêu.

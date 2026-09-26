@@ -6,7 +6,7 @@ Quyết định được đánh dấu **Proposed** chưa phải phê duyệt. Ch
 |---|---|---|---|---|
 | ADR-001 | Stack | Python/FastAPI, React/TS, PostgreSQL, Qdrant, Ollama, Docker Compose | Accepted (user requirement) | Không đổi nếu chưa có yêu cầu mới |
 | ADR-002 | Kiến trúc dịch vụ | Modular monolith + worker riêng | Proposed | Chấp thuận topology và cách deploy worker |
-| ADR-003 | Job queue | PostgreSQL-backed queue ở baseline | Open | Thư viện/cơ chế cụ thể; không thêm broker nếu chưa duyệt |
+| ADR-003 | Job queue | Bảng `ingestion_job` trong PostgreSQL; worker claim/update theo trạng thái; dùng driver DB-API tương thích được wiring từ deployment, không thêm broker | Accepted (2026-09-26) | Chọn phiên bản driver ở deployment; xử lý claim/lease và concurrency benchmark trước production scale |
 | ADR-004 | File storage | Persistent filesystem volume; hash-derived internal key, quarantine rồi atomic promote; backup cùng PostgreSQL | Accepted (ingestion v1) | Xem lại nếu triển khai object-compatible storage |
 | ADR-005 | OCR/extraction | PyMuPDF (PDF), python-docx (DOCX), Pillow (ảnh), UTF-8 strict; Tesseract 5.x + `vie` cho OCR; ngưỡng OCR mean <90/100 đưa review | Accepted (ingestion v1 design) | Trước khi thêm dependency phải rà soát license/phân phối, phiên bản cụ thể và corpus quality; confidence không đồng nghĩa độ đúng pháp lý |
 | ADR-006 | Parser pháp luật | Rule-based parser + manual review; pipeline ID `ingestion-v1`; corpus manifest theo docs/05 và docs/13 | Accepted (ingestion v1 design) | Mở rộng tự động hóa chỉ sau đánh giá corpus được duyệt |
@@ -30,3 +30,9 @@ Mỗi quyết định mới ghi lựa chọn, bối cảnh, hệ quả, owner v�
 - Bối cảnh: Hoàn tất task đầu tiên PHASE 1 trong Task Board, trước khi bắt đầu triển khai engine. Yêu cầu offline, không thêm dịch vụ cloud/API.
 - Lựa chọn: Giới hạn/định dạng, parser cục bộ, storage, OCR threshold và corpus manifest v1 được mô tả tại `docs/05_DOCUMENT_INGESTION_SPECIFICATION.md`; kiến trúc vẫn modular monolith/worker và không thêm broker.
 - Hệ quả: Task engine kế tiếp có đầu vào thiết kế cụ thể. Chưa cài package/binary. Trước khi đưa dependency vào repo phải xác nhận license/phân phối, pin phiên bản cụ thể và kiểm tra trên corpus có quyền sử dụng.
+
+### Quyết định PHASE 1 job persistence — 2026-09-26
+- Owner: Project owner đã phê duyệt Phase 0/Phase 1; người thực hiện: Codex.
+- Bối cảnh: Task ingestion engine cần job state bền vững và audit theo kiến trúc nguồn dữ liệu chuẩn PostgreSQL; ADR-003 chưa chọn framework.
+- Lựa chọn: Dùng bảng PostgreSQL `ingestion_job` và `audit_event` qua connection factory DB-API tương thích psycopg; không thêm broker/framework/driver dependency. Migration ở `migrations/0001_ingestion_engine.sql`.
+- Hệ quả: Không phát sinh dependency cài mới; deployment cần wiring một driver PostgreSQL đã được duyệt. Claim/lease/recovery worker sẽ được xác định trước khi chạy production worker.
