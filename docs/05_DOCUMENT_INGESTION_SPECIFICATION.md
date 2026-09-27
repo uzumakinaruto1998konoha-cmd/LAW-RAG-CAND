@@ -28,6 +28,15 @@ Tesseract 5.5.3 với `vie` là OCR cục bộ v1; confidence trang/vùng đư�
 
 DOCX chỉ có page number khi tài liệu có explicit/rendered page-break markers; nếu không, giữ locator theo paragraph/table/cell và để page number null vì Word pagination phụ thuộc renderer.
 
+## 5.1 Legal parser v1
+Parser v1 là rule-based, cấu hình được qua `LegalParseConfig` (không hard-code nội dung luật vào source; chỉ có từ khóa cấu trúc và từ vựng loại văn bản). Luồng: span đã trích xuất → ghép dòng theo thứ tự đọc (bbox cho PDF/OCR, locator cho DOCX/text) → dựng cây CHAPTER/SECTION/ARTICLE/CLAUSE/POINT/APPENDIX → trích metadata tối thiểu → nhận diện ứng viên quan hệ → định tuyến review.
+
+Mỗi node, metadata assertion và relation candidate đều mang `source_locator`/`page_number`, `detector`, `confidence` (0-1) và mã cảnh báo ổn định; `raw_value` được giữ để đối chiếu nguyên văn. Confidence chỉ là tín hiệu định tuyến, không phải xác suất đúng pháp lý và không bao giờ tự duyệt tài liệu.
+
+Ngưỡng định tuyến review khởi tạo: `review_confidence_threshold = 0.85` cho node/metadata; điểm/điều khoản nhận diện bằng danh sách đánh số (không nhãn) có confidence thấp hơn nên gần như luôn cần review. Cảnh báo ổn định: `HIERARCHY_NO_NODES`, `HIERARCHY_DUPLICATE_*`, `HIERARCHY_UNEXPECTED_ORDINAL_*`, `HIERARCHY_ORPHAN_MARKER`, `HIERARCHY_IMPLICIT_ORDINAL_*`, `METADATA_MISSING_*`, `METADATA_CONFLICT_*`, `METADATA_AMBIGUOUS_*`, `METADATA_INVALID_*`, `RELATION_TARGET_UNRESOLVED_*`; cảnh báo từ bước trích xuất (ví dụ `OCR_LOW_CONFIDENCE_PAGE_n`) được kế thừa. Ngày nhập dạng `dd/mm/yyyy` được chuẩn hóa ISO; ngày mơ hồ (tháng ≤ 12 và ngày ≤ 12) bị trừ confidence và cảnh báo.
+
+Relation chỉ là ứng viên: mọi relation sinh ra ở trạng thái `unverified`, không tự sửa trạng thái hiệu lực. Reviewer phải accept/correct (kèm số/ký hiệu đích hoặc nhãn phạm vi đích) hoặc reject; relation `unverified` không được dùng làm nguồn hiệu lực. Chỉ khi mọi item yêu cầu xác minh đã xử lý và mọi warning đã được acknowledge thì reviewer mới duyệt; bản chưa duyệt không đủ điều kiện phát hành. Lưu ý vận hành: bộ rule v1 cần hiệu chỉnh trên corpus có quyền sử dụng trước khi mở rộng tự động hóa (ADR-006).
+
 ## 6. Corpus thiết kế v1 và phiên bản pipeline
 Corpus acceptance được quản lý bằng manifest kiểm thử, không nhúng văn bản pháp luật vào source code. Manifest lưu mã mẫu, format/fixture hash, nhãn trang text/scan/mixed, hướng trang, ngôn ngữ, expected page count, expected text spans/metadata/hierarchy, expected review outcome và người duyệt. Bộ tối thiểu phải có PDF text, scan tiếng Việt có dấu (thẳng/xoay/mờ), PDF mixed, DOCX nhiều trang, JPG/PNG, UTF-8 text, file hỏng, MIME giả, file vượt giới hạn và bản exact-duplicate. Mẫu phải có quyền sử dụng, không chứa dữ liệu nhạy cảm chưa được phép; fixture pháp lý do chuyên gia cung cấp/duyệt, không tự tạo nội dung luật. Pipeline v1 gắn định danh `ingestion-v1`; đổi parser/OCR/config tạo processing run mới.
 

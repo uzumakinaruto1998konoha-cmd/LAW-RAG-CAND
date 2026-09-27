@@ -15,6 +15,9 @@ PostgreSQL là nguồn chuẩn. Dữ liệu pháp lý có thời gian hiệu l�
 - `ProcessingRun`, `IngestionJob`, `ChunkSet`, `Chunk`, `IndexManifest`.
 - `Conversation`, `Message`, `RetrievalTrace`, `Citation` (retention/privacy TBD).
 
+## 2.1 Hiện trạng triển khai PHASE 1
+Bảng đã tạo ở `migrations/0002_legal_parsing.sql`: `legal_parse_run` (pipeline/parser version, `parser_config_hash`, warnings, cờ review), `legal_node`, `metadata_assertion`, `document_relation_candidate`, `review_decision`, `document_approval`. Mỗi bản parse là một run bất biến; quyết định của reviewer cập nhật trạng thái xác minh trong run đó và luôn ghi người duyệt/thời điểm. `legal_node` bám `job_id` qua `legal_parse_run`; ánh xạ sang `Document`/`DocumentVersion` thật, unique constraint cho số/ký hiệu và ACL vẫn thuộc PHASE 2.
+
 ## 3. Quan hệ pháp lý
 Enum ban đầu: AMENDS, SUPPLEMENTS, REPLACES, REPEALS, GUIDES, REFERENCES. Relation cần hướng rõ, có thể giới hạn ở toàn văn bản hoặc điều/khoản, và ngày hiệu lực. Relation không xác minh chỉ tạo cảnh báo/ứng viên, không tự sửa trạng thái hiệu lực.
 

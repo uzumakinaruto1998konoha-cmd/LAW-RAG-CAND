@@ -7,7 +7,7 @@ Thiết kế kiểm thử theo requirement và rủi ro, thực hiện từ unit
 - Ingestion: từng format, text PDF/scan/mixed, OCR tiếng Việt, trang xoay, DOCX, ảnh, file lỗi/trùng.
 - Extraction implementation: page/bbox mapping PDF; DOCX paragraph/table locators và page breaks; UTF-8 BOM/form-feed; image OCR; TSV confidence parsing; OCR timeout/missing binary, confidence <90 và review routing. OCR golden-corpus quality vẫn cần chạy với bộ mẫu có quyền sử dụng.
 - Parser: hierarchy đúng/sai, numbering ngoại lệ, bảng/phụ lục, confidence và review.
-- Legal model: versioning, ngày hiệu lực, quan hệ, partial repeal/amendment, lịch sử as-of.
+- Legal parsing implementation: ghép span thành dòng đọc theo bbox/locator; cây CHAPTER/SECTION/ARTICLE/CLAUSE/POINT/APPENDIX; mã cảnh báo ổn định (trùng điều, thứ tự điều, marker mồ côi, ordinal suy ra, metadata thiếu/mâu thuẫn/ngày mơ hồ); provenance page/locator/detector; ứng viên quan hệ chỉ ở trạng thái unverified; review gate (item pending, acknowledge warning, reject node, relation bắt buộc có đích); adapter lưu parse run, quyết định và approval. Độ chính xác thực tế vẫn phải đo trên corpus có quyền sử dụng.- Legal model: versioning, ngày hiệu lực, quan hệ, partial repeal/amendment, lịch sử as-of.
 - Chunk/retrieval: boundary, hybrid recall, exact number lookup, filter, ACL non-leakage, rerank và index rollback.
 - RAG/citation: groundedness, citation span/page, đủ/thiếu evidence, xung đột, hiệu lực lịch sử, chống bịa nguồn.
 - API/UI: RBAC, workflow review, viewer page, lỗi/partial state, audit.

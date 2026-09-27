@@ -44,3 +44,15 @@ class EncryptedDocumentError(ExtractionError):
 
 class OCRUnavailableError(ExtractionError):
     code = "OCR_UNAVAILABLE"
+
+
+class LegalParsingError(IngestionError):
+    code = "LEGAL_PARSING_FAILURE"
+
+
+class ReviewItemNotFoundError(IngestionError):
+    code = "REVIEW_ITEM_NOT_FOUND"
+
+
+class ReviewIncompleteError(IngestionError):
+    code = "REVIEW_INCOMPLETE"

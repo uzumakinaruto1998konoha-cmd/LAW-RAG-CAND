@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, Sequence
 
+from .legal_models import LegalParseResult
+from .legal_review import ApprovedLegalDocument, ReviewDecision
 from .models import IngestionJob, JobStatus
 
 
@@ -29,3 +31,15 @@ class AuditSink(Protocol):
     """Audit adapter for the project-wide AuditEvent persistence model."""
 
     def record(self, *, actor_id: str, action: str, object_id: str, trace_id: str, outcome: str) -> None: ...
+
+
+class LegalParseRepository(Protocol):
+    """Durable storage for parse runs, reviewer decisions and approvals."""
+
+    def save_result(self, result: LegalParseResult) -> LegalParseResult: ...
+
+    def get_latest(self, job_id: str) -> LegalParseResult | None: ...
+
+    def save_decisions(self, job_id: str, decisions: Sequence[ReviewDecision]) -> None: ...
+
+    def save_approval(self, approval: ApprovedLegalDocument) -> None: ...

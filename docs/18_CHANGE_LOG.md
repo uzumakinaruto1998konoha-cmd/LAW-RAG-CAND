@@ -21,3 +21,10 @@
 - Pin PyMuPDF 1.28.2, python-docx 1.2.0, Pillow 12.3.0; yêu cầu Tesseract 5.5.3 + `vie`. Project owner chấp thuận PyMuPDF AGPL v3 cho triển khai nội bộ. Không tải/cài package hay binary trong task.
 - 26 unit tests và compile check đạt. Tesseract chưa có trên máy hiện tại; OCR được kiểm tra bằng adapter giả và đường thiếu-engine/review, cần chạy golden corpus OCR trong môi trường đã đóng gói binary/model.
 - Cập nhật ADR-005, đặc tả ingestion, kiến trúc, deployment/testing spec, task board và project state. Task tiếp theo: legal parsing.
+
+## 2026-09-27 — Phase 1 legal parsing
+- Thêm rule-based legal parser (`legal_rules`, `legal_parsing`): ghép span thành dòng đọc, dựng cây CHAPTER/SECTION/ARTICLE/CLAUSE/POINT/APPENDIX, trích metadata và nhận diện ứng viên quan hệ; mọi giá trị có provenance (page/locator/detector), confidence, raw value và mã cảnh báo ổn định.
+- Thêm workflow review (`legal_review`): quyết định accept/correct/reject theo metadata/node/relation, lưu reviewer và thời điểm, audit từng quyết định; chỉ duyệt khi không còn item pending và mọi warning đã được acknowledge.
+- Thêm adapter PostgreSQL và `migrations/0002_legal_parsing.sql` (legal_parse_run, legal_node, metadata_assertion, document_relation_candidate, review_decision, document_approval); không thêm driver.
+- Thêm 29 unit tests (parse từ DOCX thật, cây node, metadata, quan hệ, review gate, adapter); 55 test toàn repo đạt. Không thêm dependency, không nhúng nội dung luật vào source.
+- Cập nhật ADR-006, docs/05, docs/06, docs/13, task board và project state. Task tiếp theo: release to KB (approval, dedup, version, processing run).
