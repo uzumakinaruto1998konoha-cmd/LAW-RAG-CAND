@@ -59,3 +59,16 @@
 - Thêm 16 unit tests `test_retrieval.py` cho chunking/indexing models; 116 tests toàn repo đạt. Không thêm dependency.
 - Design: Legal-aware chunking với boundary preservation; manifest lifecycle cho index versioning; retrieval audit trail; chuẩn bị cho hybrid search (BM25 + vector).
 - Cập nhật task board và project state. Task tiếp theo: PHASE 3 retrieval implementation (hybrid search, fusion, ACL filtering) hoặc PHASE 4 RAG.
+
+## 2026-09-27 — Phase 4 RAG and citations
+- Thêm `migrations/0006_rag_citations.sql`: Schema cho conversations (conversation, message), evidence tracking (evidence, citation, message_warning), và RAG metrics.
+- Thêm domain models `rag/models.py`: Conversation, Message, Evidence, Citation, RAGResponse với enums MessageRole/CitationStatus.
+- Thêm service `rag/service.py`: RAGService cho grounded answer generation, insufficient evidence detection, server-side citation generation.
+- RAG pipeline per docs/04: Evidence → Context → LLM (Ollama) → Grounded answer → Citation validation → Response.
+- Insufficient evidence handling: Clear indication when no evidence found, warnings about unverified/invalid documents.
+- Citation generation: Server-side only from evidence IDs (no hallucinated citations per docs/04 section 4).
+- Conversation management: Track conversation threads, message history, and retrieval traces.
+- Warning system: Document unverified status, validity status, missing as_of_date.
+- Thêm 15 unit tests `test_rag.py` cho RAG models and service; 131 tests toàn repo đạt. Không thêm dependency.
+- Design: Grounded answer generation với explicit evidence citations; separation of "what document says" vs "interpretation"; ACL filtering at retrieval layer.
+- Cập nhật task board và project state. Task tiếp theo: Complete PHASE 3 retrieval hoặc PHASE 5 UI development.

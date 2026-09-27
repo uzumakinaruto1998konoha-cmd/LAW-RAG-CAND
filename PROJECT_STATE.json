@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 3 — Index and Retrieval",
-  "current_task": "Completed chunking and index infrastructure; ready for retrieval implementation or PHASE 4 RAG",
+  "current_phase": "PHASE 4 — RAG and Citations",
+  "current_task": "Completed RAG pipeline and citation infrastructure; ready for UI or remaining tasks",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -12,18 +12,18 @@
     "Implement legal metadata, hierarchy, and relation candidate parsing with provenance/confidence and reviewer workflow",
     "Implement release to knowledge base: document identity, version tracking, deduplication, and processing run audit",
     "Implement PHASE 2 knowledge model: RBAC with roles/permissions, collection-based ACL, session management, and validity status tracking",
-    "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces"
+    "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces",
+    "Implement PHASE 4 RAG: Grounded answer generation, insufficient evidence detection, server-side citation generation, conversation management"
   ],
   "pending_tasks": [
-    "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking",
-    "Implement PHASE 4 RAG: Local LLM integration via Ollama, grounded answer generation, insufficient evidence handling",
-    "Implement PHASE 4 Citations: Server-side citation validation and evidence linking",
     "Run approved ingestion corpus testing",
-    "Implement PHASE 5 Web app and Admin UI",
+    "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking",
+    "Implement PHASE 5 Web app: Search/chat UI and evidence UX",
+    "Implement PHASE 5 Admin UI: Ingestion review and KB screens",
     "PHASE 6-8: Security hardening, Quality assurance, Operations"
   ],
   "blockers": [],
-  "architecture_version": "0.8-index-chunking",
-  "last_change": "2026-09-27: Phase 3 index infrastructure with legal-aware chunking (article/clause/point level, structural path preservation), chunk storage with content hashing, index manifests for versioned search indices (lexical/vector/hybrid), retrieval traces for audit. Migration 0005, models retrieval/models.py, service retrieval/chunking.py; 16 new unit tests, 116 tests total pass; no new dependencies",
-  "next_action": "Choose next task: Complete PHASE 3 retrieval implementation (hybrid search, fusion, ACL filtering) or proceed to PHASE 4 RAG (local LLM integration)"
+  "architecture_version": "0.9-rag-citations",
+  "last_change": "2026-09-27: Phase 4 RAG and citations with conversation management (conversation, message, evidence, citation tables), grounded answer generation with evidence verification, insufficient evidence detection and warning, server-side citation generation from evidence IDs only. Migration 0006, models rag/models.py, service rag/service.py; 15 new unit tests, 131 tests total pass; no new dependencies",
+  "next_action": "Choose next task: Complete PHASE 3 retrieval implementation, PHASE 5 UI development, or continue with remaining phases"
 }
