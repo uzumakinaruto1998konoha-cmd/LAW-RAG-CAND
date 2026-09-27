@@ -56,3 +56,7 @@ class ReviewItemNotFoundError(IngestionError):
 
 class ReviewIncompleteError(IngestionError):
     code = "REVIEW_INCOMPLETE"
+
+
+class ReleaseError(IngestionError):
+    code = "RELEASE_FAILURE"

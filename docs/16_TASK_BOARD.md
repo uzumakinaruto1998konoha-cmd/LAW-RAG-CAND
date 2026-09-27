@@ -9,7 +9,7 @@
 | PHASE 1 | Ingestion engine | Upload, hash, validation, job lifecycle | Done | P0 | Ingestion design | Exact duplicate/idempotency; signature/size validation; immutable blob; PostgreSQL job state + audit; safe errors; 14 unit tests pass |
 | PHASE 1 | Extraction | PDF/DOCX/text/image extraction và OCR | Done | P0 | Ingestion engine; OCR decision | Page/bbox mapping; OCR confidence/version/traineddata hash; <90/no text/missing engine → review; 26 unit tests pass |
 | PHASE 1 | Legal parsing | Metadata + hierarchy + relation candidates | Done | P0 | Extraction; legal schema | Node/provenance/confidence; reviewer workflow; 29 unit tests pass |
-| PHASE 1 | Release to KB | Approval, dedup, version and processing run | Pending | P0 | Legal parsing; schema | Bản chưa duyệt không được retrieve |
+| PHASE 1 | Release to KB | Approval, dedup, version and processing run | Done | P0 | Legal parsing; schema | Schema 0003; document identity unique constraint; versioning increment; content hash dedup; processing run tracking; 18 unit tests pass |
 | PHASE 2 | Knowledge model | Implement document/legal schema and ACL | Pending | P0 | Phase 1 design; decisions | Version/time/history constraints |
 | PHASE 2 | Knowledge UI/API | Manage document, metadata, version, relation | Pending | P1 | Knowledge model; API/UI specs | Role scoped; audit events |
 | PHASE 3 | Index | BM25/vector index + manifest lifecycle | Pending | P0 | Chunk spec; model/backend decisions | Rebuild/rollback reproducible |

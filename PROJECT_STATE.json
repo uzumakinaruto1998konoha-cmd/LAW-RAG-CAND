@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
   "current_phase": "PHASE 1 — Document Ingestion Engine",
-  "current_task": "Approval, dedup, version and processing run to release approved documents into the knowledge base",
+  "current_task": "Completed release to KB; ready for PHASE 2 knowledge model or corpus testing",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -9,15 +9,16 @@
     "Define Phase 1 ingestion v1 formats, limits, local parser/OCR design, storage, review threshold, and corpus manifest",
     "Implement ingestion engine upload, hash, validation, PostgreSQL job lifecycle, audit, and exact deduplication",
     "Implement PDF/DOCX/text/image extraction and local OCR with page mapping, confidence, and review path",
-    "Implement legal metadata, hierarchy, and relation candidate parsing with provenance/confidence and reviewer workflow"
+    "Implement legal metadata, hierarchy, and relation candidate parsing with provenance/confidence and reviewer workflow",
+    "Implement release to knowledge base: document identity, version tracking, deduplication, and processing run audit"
   ],
   "pending_tasks": [
-    "Implement release to knowledge base: approval gate, document/version identity, deduplication, and processing run tracking",
     "Run the approved ingestion corpus (PDF text/scan/mixed, Vietnamese OCR, DOCX, images, broken/duplicate files) against the extraction and legal parser and record accuracy",
-    "Implement the PHASE 2 knowledge model: Document/DocumentVersion schema, effective dates, and ACL"
+    "Implement the PHASE 2 knowledge model: Document/DocumentVersion schema, effective dates, and ACL",
+    "Implement retrieval gate: only released versions are retrievable; unapproved documents return no results"
   ],
   "blockers": [],
-  "architecture_version": "0.5-legal-parse",
-  "last_change": "2026-09-27: Phase 1 rule-based legal parser (hierarchy, metadata assertions, relation candidates with provenance/confidence) plus reviewer workflow, PostgreSQL adapter, migration 0002; 29 new unit tests, 55 tests total pass; no packages installed during task",
-  "next_action": "Implement the next pending Phase 1 task: release to knowledge base (approval, dedup, version and processing run)"
+  "architecture_version": "0.6-release-to-kb",
+  "last_change": "2026-09-27: Phase 1 release to knowledge base implementation with document identity (unique number+body+type), versioning (incremental version_number per document), content-based deduplication (SHA-256 hash), processing run tracking, and approval gate. Migration 0003, domain models kb_models.py, repository kb_postgres.py, service kb_release.py; 18 new unit tests, 73 tests total pass; no new dependencies",
+  "next_action": "Choose next pending task: corpus testing to validate extraction/parsing accuracy, or PHASE 2 knowledge model to complete the document/version schema with ACL and effective date logic"
 }
