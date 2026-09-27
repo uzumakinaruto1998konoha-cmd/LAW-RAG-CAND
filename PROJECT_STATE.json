@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 2 — Knowledge Model",
-  "current_task": "Completed RBAC and ACL; ready for Knowledge UI/API or PHASE 3 Index",
+  "current_phase": "PHASE 3 — Index and Retrieval",
+  "current_task": "Completed chunking and index infrastructure; ready for retrieval implementation or PHASE 4 RAG",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -11,16 +11,19 @@
     "Implement PDF/DOCX/text/image extraction and local OCR with page mapping, confidence, and review path",
     "Implement legal metadata, hierarchy, and relation candidate parsing with provenance/confidence and reviewer workflow",
     "Implement release to knowledge base: document identity, version tracking, deduplication, and processing run audit",
-    "Implement PHASE 2 knowledge model: RBAC with roles/permissions, collection-based ACL, session management, and validity status tracking"
+    "Implement PHASE 2 knowledge model: RBAC with roles/permissions, collection-based ACL, session management, and validity status tracking",
+    "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces"
   ],
   "pending_tasks": [
-    "Run the approved ingestion corpus (PDF text/scan/mixed, Vietnamese OCR, DOCX, images, broken/duplicate files) against the extraction and legal parser and record accuracy",
-    "Implement PHASE 2 Knowledge UI/API: document management, metadata editing, version control, relation management",
-    "Implement PHASE 3 Index: BM25/vector index with manifest lifecycle",
-    "Implement PHASE 3 Retrieval: fusion, filters, reranking, benchmark with ACL enforcement"
+    "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking",
+    "Implement PHASE 4 RAG: Local LLM integration via Ollama, grounded answer generation, insufficient evidence handling",
+    "Implement PHASE 4 Citations: Server-side citation validation and evidence linking",
+    "Run approved ingestion corpus testing",
+    "Implement PHASE 5 Web app and Admin UI",
+    "PHASE 6-8: Security hardening, Quality assurance, Operations"
   ],
   "blockers": [],
-  "architecture_version": "0.7-knowledge-model-acl",
-  "last_change": "2026-09-27: Phase 2 knowledge model with RBAC (5 default roles: system_admin, knowledge_admin, reviewer, user, auditor; 14 permissions), collection-based ACL, session management, validity status tracking. Migration 0004, domain models knowledge_models.py, authorization.py service; 27 new unit tests, 100 tests total pass; no new dependencies",
-  "next_action": "Choose next task: Knowledge UI/API for document management, or proceed to PHASE 3 Index (BM25/vector) and Retrieval"
+  "architecture_version": "0.8-index-chunking",
+  "last_change": "2026-09-27: Phase 3 index infrastructure with legal-aware chunking (article/clause/point level, structural path preservation), chunk storage with content hashing, index manifests for versioned search indices (lexical/vector/hybrid), retrieval traces for audit. Migration 0005, models retrieval/models.py, service retrieval/chunking.py; 16 new unit tests, 116 tests total pass; no new dependencies",
+  "next_action": "Choose next task: Complete PHASE 3 retrieval implementation (hybrid search, fusion, ACL filtering) or proceed to PHASE 4 RAG (local LLM integration)"
 }

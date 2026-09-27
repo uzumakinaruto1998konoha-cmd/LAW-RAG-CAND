@@ -48,3 +48,14 @@
 - Thêm 27 unit tests `test_knowledge_model.py` cho RBAC/ACL/temporal features; 100 tests toàn repo đạt. Không thêm dependency.
 - Design: RBAC với role-based permissions; collection-based ACL cho document access; temporal role assignments với expiry; validity status tracking cho effective dates; session management với expiry/revocation.
 - Cập nhật task board và project state. Task tiếp theo: Knowledge UI/API implementation hoặc PHASE 3 Index.
+
+## 2026-09-27 — Phase 3 index infrastructure and chunking
+- Thêm `migrations/0005_index_retrieval.sql`: Schema cho chunking (chunk_set, chunk với structural path preservation), index manifests (index_manifest, chunk_index_record), retrieval traces (retrieval_trace, retrieval_result), và search metrics.
+- Thêm domain models `retrieval/models.py`: ChunkSet, Chunk, IndexManifest, RetrievalTrace, RetrievalResult với enums IndexType/IndexStatus/QueryType/RetrievalMethod.
+- Thêm service `retrieval/chunking.py`: ChunkingService generate chunks từ legal nodes ở article/clause/point level, preserve structural path (Chương/Mục/Điều), maintain page spans và provenance.
+- Chunk strategy theo docs/07: legal boundaries ưu tiên hơn token length; chunk ở cấp Điều khi phù hợp; giữ structural path, heading, page locations.
+- Index manifest versioning: support BUILDING/READY/ACTIVE/FAILED/RETIRED states; track embedding model, lexical analyzer, chunk/document counts; reproducible builds.
+- Retrieval traces: audit trail cho mọi search query với user_id, query type, filters, as_of_date, result count, latency.
+- Thêm 16 unit tests `test_retrieval.py` cho chunking/indexing models; 116 tests toàn repo đạt. Không thêm dependency.
+- Design: Legal-aware chunking với boundary preservation; manifest lifecycle cho index versioning; retrieval audit trail; chuẩn bị cho hybrid search (BM25 + vector).
+- Cập nhật task board và project state. Task tiếp theo: PHASE 3 retrieval implementation (hybrid search, fusion, ACL filtering) hoặc PHASE 4 RAG.

@@ -12,7 +12,7 @@
 | PHASE 1 | Release to KB | Approval, dedup, version and processing run | Done | P0 | Legal parsing; schema | Schema 0003; document identity unique constraint; versioning increment; content hash dedup; processing run tracking; 18 unit tests pass |
 | PHASE 2 | Knowledge model | Implement document/legal schema and ACL | Done | P0 | Phase 1 design; decisions | RBAC with 5 default roles, 14 permissions; collection-based ACL; validity_status tracking; 27 unit tests pass |
 | PHASE 2 | Knowledge UI/API | Manage document, metadata, version, relation | Pending | P1 | Knowledge model; API/UI specs | Role scoped; audit events |
-| PHASE 3 | Index | BM25/vector index + manifest lifecycle | Pending | P0 | Chunk spec; model/backend decisions | Rebuild/rollback reproducible |
+| PHASE 3 | Index | BM25/vector index + manifest lifecycle | Done | P0 | Chunk spec; model/backend decisions | Chunk generation với legal boundary preservation; index manifest với versioning; 16 unit tests pass |
 | PHASE 3 | Retrieval | Fusion, filters, reranking, benchmark | Pending | P0 | Index; ACL model; decisions | Gold metrics meet approved thresholds; no leakage |
 | PHASE 4 | RAG | Local LLM grounded answer orchestration | Pending | P0 | Retrieval; Ollama/model decision | Insufficient evidence and warning behavior |
 | PHASE 4 | Citations | Server-side citation validation and viewer link | Pending | P0 | Page spans; RAG | All citations resolve to authorized evidence/page |
