@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 4 — RAG and Citations",
-  "current_task": "Completed RAG pipeline and citation infrastructure; ready for UI or remaining tasks",
+  "current_phase": "PHASE 3 / PHASE 4 — Hybrid Retrieval & RAG Citations",
+  "current_task": "Completed Hybrid Retrieval engine and RAG pipeline; ready for API / UI / Benchmark",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -13,17 +13,18 @@
     "Implement release to knowledge base: document identity, version tracking, deduplication, and processing run audit",
     "Implement PHASE 2 knowledge model: RBAC with roles/permissions, collection-based ACL, session management, and validity status tracking",
     "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces",
+    "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking, and evidence conversion",
     "Implement PHASE 4 RAG: Grounded answer generation, insufficient evidence detection, server-side citation generation, conversation management"
   ],
   "pending_tasks": [
-    "Run approved ingestion corpus testing",
-    "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking",
+    "Run approved ingestion corpus testing and retrieval benchmark",
     "Implement PHASE 5 Web app: Search/chat UI and evidence UX",
     "Implement PHASE 5 Admin UI: Ingestion review and KB screens",
+    "PHASE 5 FastAPI REST API implementation",
     "PHASE 6-8: Security hardening, Quality assurance, Operations"
   ],
   "blockers": [],
-  "architecture_version": "0.9-rag-citations",
-  "last_change": "2026-09-27: Phase 4 RAG and citations with conversation management (conversation, message, evidence, citation tables), grounded answer generation with evidence verification, insufficient evidence detection and warning, server-side citation generation from evidence IDs only. Migration 0006, models rag/models.py, service rag/service.py; 15 new unit tests, 131 tests total pass; no new dependencies",
-  "next_action": "Choose next task: Complete PHASE 3 retrieval implementation, PHASE 5 UI development, or continue with remaining phases"
+  "architecture_version": "1.0-retrieval-rag",
+  "last_change": "2026-09-27: Completed Phase 3 Hybrid Retrieval Engine (BM25Okapi, Vector cosine search, RRF & Weighted fusion, zero ACL leakage, temporal validity filtering, legal reranking, RetrievalTrace & RetrievalResult audit logging, Evidence generation for RAG); 12 new unit tests in test_retrieval_engine.py, 143 total tests pass 100%; no new external dependencies",
+  "next_action": "Choose next task: Implement FastAPI REST API, Run corpus benchmark, or develop PHASE 5 UI"
 }

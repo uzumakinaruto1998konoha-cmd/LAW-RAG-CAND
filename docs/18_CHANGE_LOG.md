@@ -72,3 +72,15 @@
 - Thêm 15 unit tests `test_rag.py` cho RAG models and service; 131 tests toàn repo đạt. Không thêm dependency.
 - Design: Grounded answer generation với explicit evidence citations; separation of "what document says" vs "interpretation"; ACL filtering at retrieval layer.
 - Cập nhật task board và project state. Task tiếp theo: Complete PHASE 3 retrieval hoặc PHASE 5 UI development.
+
+## 2026-09-27 — Phase 3 hybrid retrieval engine
+- Thêm `retrieval/search.py`: Triển khai đầy đủ công cụ tìm kiếm kết hợp (BM25Okapi lexical search + vector cosine similarity search).
+- Thuật toán hợp nhất (Fusion algorithms): Reciprocal Rank Fusion (RRF) k=60 và Weighted Score Fusion với min-max normalization.
+- Kiểm soát truy cập ACL phía server (Server-side ACL filtering): Loại bỏ hoàn toàn tài liệu ngoài quyền của user trước khi xếp hạng (ACL leakage = 0).
+- Bộ lọc thời gian và hiệu lực (Temporal & validity filtering): Đánh giá `as_of_date` và `validity_status`, ưu tiên văn bản còn hiệu lực (`in_force`), hạ điểm hoặc cảnh báo văn bản đã hết hiệu lực (`repealed`).
+- Bộ xếp hạng lại cấu trúc pháp luật (LegalReranker): Tăng trọng số cho kết quả khớp chính xác số hiệu văn bản, Điều/Khoản và tiêu đề mục.
+- Kiểm toán truy xuất (Audit trace): Lưu vết toàn bộ truy vấn trong `RetrievalTrace` và chi tiết `RetrievalResult`.
+- Chuyển đổi kết quả tìm kiếm thành danh sách `Evidence` chuẩn hoá sẵn sàng cho `RAGService`.
+- Sửa lỗi thuộc tính `is_locked` trong `tests/test_knowledge_model.py` so sánh thời gian động.
+- Thêm 12 unit tests trong `tests/test_retrieval_engine.py`; toàn bộ 143 tests pass (100%). Không thêm dependency bên ngoài.
+

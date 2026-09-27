@@ -63,7 +63,7 @@ class AppUserTests(unittest.TestCase):
         self.assertIsNotNone(user.created_at)
 
     def test_locked_user_property(self) -> None:
-        locked_until = NOW + timedelta(hours=1)
+        locked_until = datetime.now(timezone.utc) + timedelta(hours=1)
         user = AppUser(
             user_id="u1",
             username="testuser",
