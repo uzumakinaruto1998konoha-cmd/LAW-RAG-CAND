@@ -38,3 +38,13 @@
 - Thêm 18 unit tests `test_kb_models.py` cho domain model validation; 73 tests toàn repo đạt. Không thêm dependency.
 - Design: Document identity enforced bởi unique constraint; versions không tự động supersede (admin quản lý); content-based dedup qua SHA-256 của nodes+metadata; chỉ approved documents được release; processing runs có manifest và error tracking.
 - Cập nhật task board và project state. Task tiếp theo: PHASE 2 knowledge model hoặc tiếp tục PHASE 1 corpus testing.
+
+## 2026-09-27 — Phase 2 knowledge model and ACL
+- Thêm `migrations/0004_knowledge_model_acl.sql`: RBAC schema với app_user, role, permission, user_role, role_permission; document collections cho ACL scoping (document_collection, collection_access, document_collection_member); session management (user_session, password_reset_token); validity_status field cho document_version.
+- Default roles theo docs/10: system_admin, knowledge_admin, reviewer, user, auditor với permissions matrix.
+- Default permissions: document operations (upload/view/view_restricted/edit_metadata/approve/delete), version/relation/user/role/audit/index/collection management.
+- Thêm domain models `knowledge_models.py`: AppUser, Role, Permission, UserRole, DocumentCollection, CollectionAccess, UserSession, PasswordResetToken, ValidityStatus enum, AccessLevel enum.
+- Thêm service layer `authorization.py`: AuthorizationService với permission checks, collection/document access validation, và AuditLogger cho access audit trail.
+- Thêm 27 unit tests `test_knowledge_model.py` cho RBAC/ACL/temporal features; 100 tests toàn repo đạt. Không thêm dependency.
+- Design: RBAC với role-based permissions; collection-based ACL cho document access; temporal role assignments với expiry; validity status tracking cho effective dates; session management với expiry/revocation.
+- Cập nhật task board và project state. Task tiếp theo: Knowledge UI/API implementation hoặc PHASE 3 Index.
