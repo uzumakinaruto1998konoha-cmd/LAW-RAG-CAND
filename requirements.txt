@@ -3,3 +3,10 @@
 PyMuPDF==1.28.2
 python-docx==1.2.0
 Pillow==12.3.0
+
+# PHASE 5 API layer (ADR-001 stack, approved). Pure-Python ASGI stack, no cloud calls.
+fastapi==0.141.1
+uvicorn==0.54.0
+
+# Test-only client for the ASGI test suite (see docs/13).
+httpx==0.28.1

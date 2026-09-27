@@ -445,3 +445,31 @@ class RetrievalService:
     def get_trace_results(self, trace_id: str) -> tuple[RetrievalResult, ...]:
         return tuple(self._trace_results.get(trace_id, []))
 
+    # --- Read-only projections for the API/knowledge layer ---------------
+    def chunk(self, chunk_id: str) -> Chunk | None:
+        """Return a single indexed chunk without exposing the internal store."""
+        return self._chunks.get(chunk_id)
+
+    def metadata_for_version(self, version_id: str) -> DocumentMetadata | None:
+        return self._metadata.get(version_id)
+
+    def all_metadata(self) -> tuple[DocumentMetadata, ...]:
+        """Metadata for every indexed document version.
+
+        Callers must apply ACL checks before returning any of this to a user.
+        """
+        return tuple(self._metadata.values())
+
+    def chunks_for_version(self, version_id: str) -> tuple[Chunk, ...]:
+        """Chunks of a version ordered by chunk index."""
+        chunks = [chunk for chunk in self._chunks.values() if chunk.version_id == version_id]
+        return tuple(sorted(chunks, key=lambda chunk: chunk.chunk_index))
+
+    @property
+    def indexed_chunk_count(self) -> int:
+        return len(self._chunks)
+
+    @property
+    def indexed_version_count(self) -> int:
+        return len(self._metadata)
+

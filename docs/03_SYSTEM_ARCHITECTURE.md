@@ -8,6 +8,7 @@ Kiến trúc modular monolith cho API và điều phối nghiệp vụ, cộng w
 ## 2. Thành phần và trách nhiệm
 - Web UI: đăng nhập, tra cứu/chat, quản trị tài liệu, duyệt extraction, quản lý người dùng/index/audit theo quyền.
 - FastAPI: xác thực/ủy quyền, API, orchestration retrieval/RAG, kiểm tra citation, quản trị.
+- API layer (PHASE 5): `src/law_rag/api/` với `create_app()` dựng app `/api/v1`, `ApiContainer` giữ service graph và là enforcement point duy nhất cho ACL/RBAC, `security.py` (bearer token) và `acl.py` (collection ACL deny-by-default nối vào `AuthorizationService.check_collection_access` mà retrieval gọi trước ranking). Endpoint và envelope lỗi theo `docs/11_API_SPECIFICATION.md` mục 6.
 - Ingestion worker: nhận job, kiểm tra file, trích xuất/OCR, cấu trúc, metadata, dedup, chờ duyệt và lập index.
 - Ingestion job/audit: PostgreSQL giữ trạng thái job và audit event; migration `migrations/0001_ingestion_engine.sql`; connection factory được wiring từ runtime, không ép driver vào package domain.
 - PostgreSQL: hồ sơ tài liệu và phiên bản, nội dung/định vị chuẩn, cấu trúc pháp lý, quan hệ, ACL/RBAC, job, cấu hình và audit.

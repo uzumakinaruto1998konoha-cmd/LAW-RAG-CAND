@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 3 / PHASE 4 — Hybrid Retrieval & RAG Citations",
-  "current_task": "Completed Hybrid Retrieval engine and RAG pipeline; ready for API / UI / Benchmark",
+  "current_phase": "PHASE 5 — Web Application / API",
+  "current_task": "Completed FastAPI REST API v1 backend on /api/v1 with server-side authn/authz and zero ACL leakage",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -14,17 +14,19 @@
     "Implement PHASE 2 knowledge model: RBAC with roles/permissions, collection-based ACL, session management, and validity status tracking",
     "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces",
     "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking, and evidence conversion",
-    "Implement PHASE 4 RAG: Grounded answer generation, insufficient evidence detection, server-side citation generation, conversation management"
+    "Implement PHASE 4 RAG: Grounded answer generation, insufficient evidence detection, server-side citation generation, conversation management",
+    "Implement PHASE 5 API backend: FastAPI /api/v1 endpoints (search, chat, conversations, documents, upload, jobs, traces, health) with bearer-token authentication, deny-by-default RBAC + collection ACL, and the standard error envelope"
   ],
   "pending_tasks": [
     "Run approved ingestion corpus testing and retrieval benchmark",
     "Implement PHASE 5 Web app: Search/chat UI and evidence UX",
     "Implement PHASE 5 Admin UI: Ingestion review and KB screens",
-    "PHASE 5 FastAPI REST API implementation",
+    "Wire API endpoints to PostgreSQL, Qdrant and Ollama for deployment (PHASE 6-8)",
+    "Lock API contract details still TBD: pagination, rate limits, MFA/SSO, official upload transport",
     "PHASE 6-8: Security hardening, Quality assurance, Operations"
   ],
   "blockers": [],
-  "architecture_version": "1.0-retrieval-rag",
-  "last_change": "2026-09-27: Completed Phase 3 Hybrid Retrieval Engine (BM25Okapi, Vector cosine search, RRF & Weighted fusion, zero ACL leakage, temporal validity filtering, legal reranking, RetrievalTrace & RetrievalResult audit logging, Evidence generation for RAG); 12 new unit tests in test_retrieval_engine.py, 143 total tests pass 100%; no new external dependencies",
-  "next_action": "Choose next task: Implement FastAPI REST API, Run corpus benchmark, or develop PHASE 5 UI"
+  "architecture_version": "1.1-retrieval-rag-api",
+  "last_change": "2026-09-27: Completed Phase 5 API backend (src/law_rag/api): FastAPI app factory on /api/v1 with OpenAPI contract, ApiContainer enforcement point, opaque bearer-token auth (SHA-256 at rest), deny-by-default RBAC and collection ACL wired into AuthorizationService.check_collection_access, ACL-filtered search/chat/documents/jobs/traces endpoints, raw-body upload with Idempotency-Key and streaming size cap, stable error envelope with request_id and no secrets in response or log; 46 new tests in test_api.py, 189 total tests pass 100%; pinned fastapi 0.141.1, uvicorn 0.54.0, httpx 0.28.1",
+  "next_action": "Choose next task: Build PHASE 5 React web UI against the /api/v1 contract, or run the approved corpus ingestion/retrieval benchmark"
 }

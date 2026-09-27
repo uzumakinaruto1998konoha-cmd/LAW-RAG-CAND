@@ -84,3 +84,16 @@
 - Sửa lỗi thuộc tính `is_locked` trong `tests/test_knowledge_model.py` so sánh thời gian động.
 - Thêm 12 unit tests trong `tests/test_retrieval_engine.py`; toàn bộ 143 tests pass (100%). Không thêm dependency bên ngoài.
 
+## 2026-09-27 — Phase 5 API backend (FastAPI `/api/v1`)
+- Thêm package `src/law_rag/api/`: `app.py` (application factory `/api/v1`, OpenAPI là contract), `container.py` (service graph + enforcement point), `dependencies.py`, `errors.py`, `security.py`, `acl.py`, `schemas.py`, `routers/` (health, identity, search, chat, documents, ingestion), `main.py` (chạy bằng `python -m law_rag.api.main`).
+- Endpoint: `GET /health`, `GET /ready`, `GET /me`, `POST /search`, `POST /chat`, `POST /conversations`, `GET /conversations/{id}`, `GET /documents`, `GET /documents/{id}`, `POST /documents/upload`, `GET /jobs/{id}`, `GET /traces/{id}`.
+- Xác thực server-side bằng bearer token opaque; registry chỉ giữ SHA-256 token, không log token. RBAC deny-by-default theo ma trận 5 vai trò, ghi đè được khi triển khai.
+- ACL collection deny-by-default nối vào `AuthorizationService.check_collection_access` mà retrieval gọi trước ranking: mọi đường đọc (search, chat, documents, job, trace) đều lọc ACL; tài liệu/hội thoại/job của người khác trả 404 để không lộ sự tồn tại.
+- Envelope lỗi chuẩn với mã ổn định, `request_id` (header `X-Request-ID` echo), field errors; 5xx trả thông điệp chung không kèm stack trace hay secret, và log 5xx chỉ ghi `error_type` (không sao chép nội dung exception vào log). Middleware gán request id cho mọi response.
+- Ghi nhận hành vi framework: FastAPI giải mã body JSON trước dependency nên body hỏng trả 422 trước 401; đã có test khoá lại hành vi này và ghi vào `docs/11`.
+- Upload dùng body thô + `filename` query + `Idempotency-Key`; kiểm tra giới hạn kích thước khi đọc stream (413 trước khi ghi blob), trùng nội dung trả `duplicate_match`, `document_id`/`version_id` là null tới khi version được duyệt.
+- Thêm adapter in-memory `ingestion/memory.py` cho dev/test (production vẫn dùng PostgreSQL theo ADR-003) và projection chỉ đọc trên `RetrievalService` cho lớp knowledge.
+- Pin `fastapi==0.141.1`, `uvicorn==0.54.0`, `httpx==0.28.1` (test) trong `requirements.txt`.
+- Thêm 46 test trong `tests/test_api.py` (authn 401, RBAC 403, ACL leakage = 0, chat có citation, insufficient evidence, ownership hội thoại, upload/duplicate/413/415/409/503, trace audit, envelope 500 an toàn cả response lẫn log); toàn bộ 189 tests pass (100%).
+- Cập nhật ADR-018 (API layer) và trạng thái ADR-009/ADR-010, đặc tả API, task board và project state. Task tiếp theo: PHASE 5 Web UI hoặc benchmark corpus.
+

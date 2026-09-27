@@ -12,8 +12,8 @@ Quyết định được đánh dấu **Proposed** chưa phải phê duyệt. Ch
 | ADR-006 | Parser pháp luật | Rule-based parser + manual review; pipeline ID `ingestion-v1` và `legal-parse-v1`; corpus manifest theo docs/05 và docs/13 | Accepted (ingestion v1 design, legal parsing 2026-09-27) | Mở rộng tự động hóa chỉ sau đánh giá corpus được duyệt |
 | ADR-007 | Embedding/LLM/reranker | Chạy qua Ollama/local model | Open | Model/version, license, RAM/VRAM, tiếng Việt, context |
 | ADR-008 | BM25 | Lexical/full-text trong PostgreSQL là phương án đầu | Open | Có chấp nhận built-in lexical hay backend khác trong stack hiện tại |
-| ADR-009 | Authentication | Local account là baseline tối thiểu | Open | MFA/SSO/IdP, password policy/session |
-| ADR-010 | ACL | RBAC bắt buộc; ACL theo collection/document nếu cần | Open | Phân loại dữ liệu, nhóm người dùng, deny-by-default |
+| ADR-009 | Authentication | Local account là baseline tối thiểu | Proposed (API baseline 2026-09-27) | MFA/SSO/IdP, password policy/session |
+| ADR-010 | ACL | RBAC bắt buộc; ACL theo collection/document nếu cần | Proposed (API baseline 2026-09-27) | Phân loại dữ liệu, nhóm người dùng, deny-by-default |
 | ADR-011 | Hiệu lực | As-of temporal state; chỉ relation đã xác minh tác động | Proposed | Quy tắc partial amendment/repeal, nguồn xác thực |
 | ADR-012 | Vận hành offline | Runtime không cloud; cập nhật qua gói cục bộ | Accepted (user requirement) | Mức air-gap và quy trình chuyển gói |
 | ADR-013 | Backup/restore | PostgreSQL + blobs là nguồn khôi phục; vector rebuildable | Proposed | RPO/RTO, retention, encryption, nơi lưu, lịch |
@@ -21,6 +21,7 @@ Quyết định được đánh dấu **Proposed** chưa phải phê duyệt. Ch
 | ADR-015 | Data governance | Chưa chốt retention/chat/audit/deletion | Open | Thời hạn lưu, quyền xóa/ẩn danh, legal hold |
 | ADR-016 | Deployment host | Windows dev; host LAN production TBD | Open | OS, GPU, TLS, network segmentation |
 | ADR-017 | Security policy | RBAC/audit/secret hygiene bắt buộc | Accepted (user requirement) | Role matrix, encryption/key lifecycle, audit tamper protection |
+| ADR-018 | API layer | FastAPI `/api/v1`, bearer token opaque (chỉ giữ SHA-256), RBAC deny-by-default + ACL theo collection, upload bằng body thô + `Idempotency-Key` | Proposed (2026-09-27) | Chốt role matrix cuối, phân trang, rate limit, MFA/SSO, transport upload chính thức |
 
 ## Quy tắc cập nhật
 Mỗi quyết định mới ghi lựa chọn, bối cảnh, hệ quả, owner và ngày. Khi đổi quyết định, không xóa lịch sử; cập nhật tài liệu bị ảnh hưởng và `PROJECT_STATE.json`.
@@ -48,3 +49,9 @@ Mỗi quyết định mới ghi lựa chọn, bối cảnh, hệ quả, owner v�
 - Bối cảnh: Cần metadata, cây cấu trúc và ứng viên quan hệ có provenance/confidence cùng workflow review; schema pháp lý ở docs/06 mới ở mức đề xuất và chưa có quyết định nào về parser ngoài ADR-006.
 - Lựa chọn: Rule-based parser cấu hình được (`LegalParseConfig`), pipeline ID `legal-parse-v1`, lưu `parser_config_hash` cùng mỗi parse run; cây node CHAPTER/SECTION/ARTICLE/CLAUSE/POINT/APPENDIX; metadata assertion và relation candidate đều `unverified` cho tới khi reviewer quyết định; duyệt chỉ khi không còn item pending và mọi warning được acknowledge. Bảng `legal_parse_run`, `legal_node`, `metadata_assertion`, `document_relation_candidate`, `review_decision`, `document_approval` trong `migrations/0002_legal_parsing.sql`; adapter dùng connection factory DB-API sẵn có (ADR-003).
 - Hệ quả: Không thêm dependency và không nhúng nội dung luật vào source; từ khóa cấu trúc/từ vựng loại văn bản nằm trong cấu hình có thể mở rộng sau khi được corpus duyệt xác nhận. Quan hệ chưa xác minh không được dùng cho hiệu lực (giữ đúng ADR-011); việc ánh xạ `Document`/`DocumentVersion` thật sang schema PHASE 2 vẫn TBD, `job_id` hiện là khóa nhận diện parse run.
+
+### Quyết định PHASE 5 API layer — 2026-09-27
+- Owner: Project owner (yêu cầu triển khai API backend REST v1 trong phiên này); người thực hiện: Codex.
+- Bối cảnh: Cần lớp API để UI Phase 5 và kiểm thử tích hợp dùng được, đồng thời bổ sung xác thực/ủy quyền server-side cho ADR-009/ADR-010 vốn còn Open. ADR-001 đã chấp thuận FastAPI nên không thay đổi stack.
+- Lựa chọn: FastAPI 0.141.1 + uvicorn 0.54.0 (pin trong `requirements.txt`); prefix `/api/v1`, OpenAPI là contract. Xác thực bằng bearer token opaque, registry chỉ giữ SHA-256 token và map sang `AppUser`; RBAC deny-by-default theo ma trận 5 vai trò có thể ghi đè khi triển khai; ACL collection deny-by-default được nối thẳng vào `AuthorizationService.check_collection_access` mà retrieval gọi trước ranking. Tài liệu/hội thoại/job ngoài quyền trả 404 thay vì 403 để không lộ sự tồn tại. Upload dùng body thô + `filename` query + `Idempotency-Key`, kiểm tra giới hạn kích thước ngay khi đọc stream; thêm adapter in-memory (`ingestion/memory.py`) cho dev/test, production vẫn dùng PostgreSQL (ADR-003).
+- Hệ quả: 189 unit/integration test đạt, gồm 46 test API; không gọi cloud, không nhúng nội dung luật, không hard-code secret. Endpoint đang dùng store in-memory nên cần wiring PostgreSQL/Qdrant/Ollama ở PHASE 6-8; phân trang, rate limit, MFA/SSO và transport upload chính thức vẫn TBD.

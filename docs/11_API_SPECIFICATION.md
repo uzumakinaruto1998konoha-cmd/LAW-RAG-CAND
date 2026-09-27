@@ -21,3 +21,29 @@ Chuẩn hóa lỗi: code ổn định, message an toàn, request/trace ID, field
 
 ## 5. Yêu cầu contract
 OpenAPI mô tả schema, permission, trạng thái, ngày theo ISO-8601 và phân trang. Mọi endpoint file/citation phải kiểm tra ACL. Contract chi tiết sẽ khóa trước triển khai Phase tương ứng; danh sách route hiện là thiết kế, không phải cam kết code ngay.
+
+## 6. Contract đã hiện thực (PHASE 5, 2026-09-27)
+Prefix `/api/v1`; OpenAPI ở `/api/v1/openapi.json`, Swagger UI ở `/api/v1/docs`. Mã nguồn: `src/law_rag/api/`.
+
+| Method | Path | Quyền | Mô tả |
+|---|---|---|---|
+| GET | `/health` | công khai | Liveness + `architecture_version` |
+| GET | `/ready` | công khai | Readiness theo subsystem (không lộ dữ liệu) |
+| GET | `/me` | đã xác thực | Người dùng hiện tại + quyền server đã resolve |
+| POST | `/search` | `search.query` | Hybrid search, ACL trước ranking, trả `trace_id` |
+| POST | `/chat` | `chat.query` | Trả lời có căn cứ + citation do server sinh |
+| POST | `/conversations` | `chat.query` | Tạo hội thoại (201) |
+| GET | `/conversations/{id}` | `chat.query` | Hội thoại của chính người gọi, khác → 404 |
+| GET | `/documents` | `document.view` | Danh sách tài liệu đọc được (đã lọc ACL) |
+| GET | `/documents/{id}` | `document.view` | Tài liệu + chunk; ngoài quyền → 404 |
+| POST | `/documents/upload` | `document.upload` | Nạp tài liệu (202), yêu cầu `Idempotency-Key` |
+| GET | `/jobs/{job_id}` | `document.upload` hoặc `audit.view` | Trạng thái job; người khác → 404 |
+| GET | `/traces/{trace_id}` | chủ trace hoặc `audit.view` | Audit truy vấn (chỉ chunk id, không trả nội dung) |
+
+Xác thực: header `Authorization: Bearer <token>`; server chỉ giữ SHA-256 của token và map sang `AppUser`. RBAC deny-by-default theo ma trận vai trò có thể ghi đè khi triển khai. Phân trang, rate limit và `Idempotency-Key` cho endpoint khác vẫn TBD; danh sách tài liệu hiện trả toàn bộ kết quả đọc được và sẽ bổ sung `limit/offset` ở contract khóa.
+
+Upload transport tạm thời: body thô là nội dung file, `filename` ở query, `Idempotency-Key` ở header; giới hạn kích thước được kiểm tra khi đọc stream (413) trước khi ghi blob. `document_id`/`version_id` là `null` cho tới khi version được duyệt và release, nên nội dung chưa duyệt không có địa chỉ để truy cập.
+
+Envelope lỗi chuẩn: `{"error": {"code", "message", "request_id", "field_errors": [{"field", "message", "code"}]}}` với 401 xác thực, 403 quyền, 404 không lộ sự tồn tại tài liệu ngoài quyền, 409 xung đột idempotency/trạng thái, 413 quá lớn, 415 định dạng, 422 validation, 503 chưa cấu hình, 5xx chung không kèm stack trace hay secret.
+
+Hành vi đã kiểm chứng: FastAPI giải mã body JSON trước khi chạy dependency, nên body hỏng trả 422 kể cả khi thiếu token; phản hồi này không chứa thông tin về kho dữ liệu, người dùng hay quyền. Mọi trường hợp body hợp lệ đều phải qua xác thực và kiểm tra quyền trước khi đọc dữ liệu.
