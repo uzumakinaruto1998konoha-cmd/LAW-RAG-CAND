@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="LAW-RAG">
+  <rect width="32" height="32" rx="7" fill="#4f46e5" />
+  <g stroke="#ffffff" stroke-width="2" stroke-linecap="round" fill="none">
+    <path d="M16 7v18" />
+    <path d="M9 10h14" />
+    <path d="M9 10l-3.5 6h7z" />
+    <path d="M23 10l-3.5 6h7z" />
+    <path d="M11 25h10" />
+  </g>
+</svg>

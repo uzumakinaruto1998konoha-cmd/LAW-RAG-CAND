@@ -17,10 +17,10 @@
 | PHASE 4 | RAG | Local LLM grounded answer orchestration | Done | P0 | Retrieval; Ollama/model decision | Grounded answer generation, insufficient evidence detection, conversation management; 15 unit tests pass |
 | PHASE 4 | Citations | Server-side citation validation and viewer link | Done | P0 | Page spans; RAG | Server-generated citations from evidence IDs, validation, viewer URL; integration with RAG response |
 | PHASE 5 | API backend | FastAPI `/api/v1` endpoints + server-side authn/authz | Done | P1 | RAG; citations; ACL model | Chat/search/documents/upload/jobs/traces/health trên `/api/v1`; bearer token (chỉ giữ SHA-256); RBAC deny-by-default + ACL collection; 404 không lộ ACL; error envelope chuẩn; OpenAPI là contract; 46 unit/integration tests pass |
-| PHASE 5 | Web app | Search/chat and evidence UX | Pending | P1 | API/RAG | Main query flow and warnings work |
-| PHASE 5 | Admin UI | Ingestion review, KB and index screens | Pending | P1 | Phase 1/2 APIs | Authorized admin flow end-to-end |
+| PHASE 5 | Web app | Search/chat and evidence UX | Done | P1 | API/RAG | Search/chat + evidence UX, hội thoại, kho tài liệu (list/detail), trace, admin upload/job, health/readiness; tsc -b + vite build, ESLint và 36 test Vitest đạt; luồng chính và cảnh báo (thiếu căn cứ, chưa xác minh, degraded index) có màn hình riêng |
+| PHASE 5 | Admin UI | Ingestion review, KB and index screens | In Progress | P1 | Phase 1/2 APIs | Đã có màn hình upload + job status + tổng quan KB theo quyền, và nêu rõ các chức năng thiếu endpoint; duyệt/release, index manifest, users/roles và audit list vẫn Pending vì chưa có API |
 | PHASE 6 | Security | Auth, RBAC, audit, hardening | Pending | P0 | Security decisions; APIs | Access matrix verified; no bypass |
 | PHASE 7 | Quality | Automated/manual and RAG evaluation | Pending | P0 | Features complete; gold set | Release gates documented and met |
 | PHASE 8 | Operations | Compose, backup/restore, offline runbook | Pending | P0 | Deployment decisions | Repeatable deployment and restore drill |
 
-**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Task tiếp theo là PHASE 1 Release to KB (approval, dedup, version và processing run); chưa bắt đầu trong lần này.
+**Trạng thái:** Done / In Progress / Pending / Blocked. **Ưu tiên:** P0 release-critical, P1 important, P2 later. Task tiếp theo: chạy benchmark corpus đã duyệt, hoặc mở endpoint review/approve + index manifest để hoàn tất PHASE 5 Admin UI.
