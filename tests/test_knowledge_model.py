@@ -224,10 +224,11 @@ class UserSessionTests(unittest.TestCase):
             )
 
     def test_new_session_is_valid(self) -> None:
+        # `is_expired` reads the real clock, so the expiry must be relative to now.
         session = UserSession.new(
             session_id="s1",
             user_id="u1",
-            expires_at=NOW + timedelta(hours=8),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=8),
         )
 
         self.assertTrue(session.is_valid)
@@ -237,12 +238,29 @@ class UserSessionTests(unittest.TestCase):
         session = UserSession.new(
             session_id="s1",
             user_id="u1",
-            expires_at=NOW + timedelta(hours=8),
+            expires_at=datetime.now(timezone.utc) + timedelta(hours=8),
         )
 
         from dataclasses import replace
         revoked = replace(session, is_revoked=True)
         self.assertFalse(revoked.is_valid)
+
+    def test_new_session_accepts_explicit_creation_time(self) -> None:
+        session = UserSession.new(
+            session_id="s1",
+            user_id="u1",
+            created_at=NOW,
+            expires_at=NOW + timedelta(hours=8),
+        )
+        self.assertEqual(session.created_at, NOW)
+
+        with self.assertRaises(ValueError):
+            UserSession.new(
+                session_id="s2",
+                user_id="u1",
+                created_at=NOW,
+                expires_at=NOW - timedelta(minutes=1),
+            )
 
 
 class PasswordResetTokenTests(unittest.TestCase):

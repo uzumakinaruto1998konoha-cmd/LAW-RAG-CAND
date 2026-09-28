@@ -20,9 +20,14 @@ from law_rag.ingestion.authorization import (
     ResourceNotFoundError,
 )
 from law_rag.ingestion.errors import (
+    ExtractionError,
     IdempotencyConflictError,
     IngestionError,
     InvalidTransitionError,
+    LegalParsingError,
+    ReleaseError,
+    ReviewIncompleteError,
+    ReviewItemNotFoundError,
     StorageError,
     UnsupportedFileError,
     UploadTooLargeError,
@@ -126,6 +131,12 @@ def classify_error(exc: Exception) -> ApiError | None:
     if isinstance(exc, UnsupportedFileError):
         return UnsupportedMediaTypeApiError(str(exc))
     if isinstance(exc, UploadValidationError):
+        return ValidationApiError(str(exc))
+    if isinstance(exc, ReviewItemNotFoundError):
+        return ValidationApiError(str(exc))
+    if isinstance(exc, (ReviewIncompleteError, ReleaseError)):
+        return ConflictApiError(str(exc))
+    if isinstance(exc, (ExtractionError, LegalParsingError)):
         return ValidationApiError(str(exc))
     if isinstance(exc, StorageError):
         return ApiError("Lưu trữ nội bộ gặp lỗi, vui lòng thử lại sau.")

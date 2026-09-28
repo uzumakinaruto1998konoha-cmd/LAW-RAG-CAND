@@ -12,6 +12,7 @@ import logging
 import uuid
 from dataclasses import dataclass, replace
 from datetime import date, datetime, timezone
+from typing import TYPE_CHECKING
 
 from law_rag.ingestion.knowledge_models import (
     AccessLevel,
@@ -33,6 +34,10 @@ from .errors import (
     ServiceUnavailableApiError,
 )
 from .security import RbacPolicy, TokenAuthenticator
+
+if TYPE_CHECKING:  # pragma: no cover - typing only
+    from law_rag.ingestion.legal_review import ReviewDecision
+    from law_rag.ingestion.pipeline import IngestionPipeline, PipelineOutcome, ReleasedVersion, ReviewState
 
 LOGGER = logging.getLogger(__name__)
 
@@ -84,6 +89,9 @@ class ApiContainer:
         display_phase: str = "PHASE 5 - Web Application / API",
         rbac: RbacPolicy | None = None,
         ingestion_service=None,
+        pipeline: "IngestionPipeline | None" = None,
+        kb_repository=None,
+        legal_repository=None,
     ) -> None:
         self.architecture_version = architecture_version
         self.display_phase = display_phase
@@ -93,6 +101,11 @@ class ApiContainer:
         self.retrieval = RetrievalService(auth_service=self.authorization)
         self.rag = RAGService()
         self.ingestion_service = ingestion_service
+        self.pipeline = pipeline
+        self.kb_repository = kb_repository
+        self.legal_repository = legal_repository
+        # Set by the deployment bootstrap once an AuditSink is wired.
+        self.audit = None
         self._users: dict[str, AppUser] = {}
         self._conversations: dict[str, Conversation] = {}
         self._messages: dict[str, list[Message]] = {}
@@ -378,16 +391,103 @@ class ApiContainer:
             trace_id=trace_id,
         )
 
-    def job_for(self, *, user: AppUser, job_id: str) -> IngestionJob:
-        """Return a job to its uploader or to audit/administration roles."""
+    def job_for(
+        self, *, user: AppUser, job_id: str, allow_review_roles: bool = False
+    ) -> IngestionJob:
+        """Return a job to its uploader, to audit roles, or to the review roles.
+
+        ``allow_review_roles`` lets document reviewers work on jobs uploaded by someone
+        else (the review workflow crosses roles); other callers still get 404 so job
+        existence is not disclosed.
+        """
         if self.ingestion_service is None:
             raise ServiceUnavailableApiError("Ingestion pipeline chưa được cấu hình trong môi trường này.")
         job = self.ingestion_service.repository.get(job_id)
         if job is None:
             raise ResourceNotFoundApiError(f"Job {job_id} was not found.")
-        if job.uploader_id != user.user_id and not self.has_permission(user, "audit.view"):
+        if job.uploader_id == user.user_id:
+            return job
+        allowed = {"audit.view"}
+        if allow_review_roles:
+            allowed |= {"document.edit_metadata", "document.approve"}
+        if not any(self.has_permission(user, permission) for permission in allowed):
             raise ResourceNotFoundApiError(f"Job {job_id} was not found.")
         return job
+
+    # --- ingestion pipeline (review / approve / release) ------------------
+    def process_job_in_background(self, *, job_id: str) -> None:
+        """Run extraction + parsing after the upload response; failures stay on the job."""
+        if self.pipeline is None:
+            return
+        try:
+            self.pipeline.process(job_id)
+        except Exception:  # noqa: BLE001 - the job already records the error code
+            LOGGER.exception("Background ingestion processing failed job_id=%s", job_id)
+
+    def process_job(self, *, user: AppUser, job_id: str) -> "PipelineOutcome":
+        """Process an uploaded job on demand (uploader or audit/administration)."""
+        self.authorize_any(user, ("document.upload", "document.approve", "audit.view"))
+        job = self.job_for(user=user, job_id=job_id)
+        return self._require_pipeline().process(job.job_id)
+
+    def review_state_for(self, *, user: AppUser, job_id: str) -> "ReviewState":
+        """Reviewer view of a parsed job; other users get 404 as with any job read."""
+        self.authorize_any(
+            user, ("document.upload", "document.edit_metadata", "document.approve", "audit.view")
+        )
+        job = self.job_for(user=user, job_id=job_id, allow_review_roles=True)
+        return self._require_pipeline().review_state(job.job_id)
+
+    def submit_review(
+        self, *, user: AppUser, job_id: str, decisions: tuple[ReviewDecision, ...]
+    ) -> "ReviewState":
+        """Record reviewer decisions for a parsed job and return the updated state."""
+        self.authorize(user, "document.edit_metadata")
+        job = self.job_for(user=user, job_id=job_id, allow_review_roles=True)
+        pipeline = self._require_pipeline()
+        pipeline.submit_decisions(job.job_id, decisions)
+        return pipeline.review_state(job.job_id)
+
+    def approve_job(
+        self,
+        *,
+        user: AppUser,
+        job_id: str,
+        collection_id: str,
+        acknowledged_warnings: tuple[str, ...] = (),
+    ) -> "ReleasedVersion":
+        """Approve, release and index an ingested document into a collection."""
+        self.authorize(user, "document.approve")
+        job = self.job_for(user=user, job_id=job_id, allow_review_roles=True)
+        # Releasing writes into the knowledge base: require write access, not just read.
+        self.authorization.check_collection_access(
+            user, collection_id, min_access_level=AccessLevel.WRITE
+        )
+        return self._require_pipeline().approve(
+            job.job_id,
+            reviewer_id=user.user_id,
+            acknowledged_warnings=acknowledged_warnings,
+            released_by=user.user_id,
+            collection_id=collection_id,
+        )
+
+    def collections_for(self, user: AppUser) -> tuple[tuple[DocumentCollection, AccessLevel], ...]:
+        """Collections the caller can read, with the effective access level."""
+        readable = self.acl.readable_collection_ids(user=user)
+        result = []
+        for collection_id in sorted(readable):
+            collection = self.acl.collection(collection_id)
+            level = self.acl.effective_level(user_id=user.user_id, collection_id=collection_id)
+            if collection is not None and level is not None:
+                result.append((collection, level))
+        return tuple(result)
+
+    def _require_pipeline(self) -> "IngestionPipeline":
+        if self.pipeline is None:
+            raise ServiceUnavailableApiError(
+                "Ingestion pipeline chưa được cấu hình trong môi trường này."
+            )
+        return self.pipeline
 
     # --- traces -----------------------------------------------------------
     def trace_for(

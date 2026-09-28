@@ -397,13 +397,21 @@ def _extract_metadata(
 ) -> tuple[tuple[MetadataAssertion, ...], list[str]]:
     warnings: list[str] = []
     assertions: list[MetadataAssertion] = []
-    used_lines: set[int] = set()
+    # line index -> metadata fields already sourced from that line. A line may feed both
+    # halves of a document header ("Luật số: 31/2024/QH15"), but it is spent for every
+    # other field so loose detectors cannot re-read the same text.
+    used_lines: dict[int, set[MetadataField]] = {}
+    header_pair = {MetadataField.DOCUMENT_TYPE, MetadataField.DOCUMENT_NUMBER}
     for rule in config.metadata_rules:
         if rule.value_kind == "head_line_title":
             continue
         for line in _rule_lines(rule, lines, config):
-            if rule.value_kind != "fixed" and line.index in used_lines:
-                continue
+            previous_fields = used_lines.get(line.index)
+            if rule.value_kind != "fixed" and previous_fields:
+                same_field = rule.metadata_field in previous_fields
+                header_reuse = rule.metadata_field in header_pair and previous_fields <= header_pair
+                if same_field or not header_reuse:
+                    continue
             value = _rule_value(rule, line, warnings)
             if value is None:
                 continue
@@ -411,7 +419,7 @@ def _extract_metadata(
             if line.ocr_confidence is not None:
                 confidence = min(confidence, line.ocr_confidence)
             if rule.value_kind != "fixed":
-                used_lines.add(line.index)
+                used_lines.setdefault(line.index, set()).add(rule.metadata_field)
             assertions.append(MetadataAssertion(
                 assertion_id=f"meta-{rule.metadata_field.value}-{len(assertions) + 1:03d}",
                 field=rule.metadata_field,

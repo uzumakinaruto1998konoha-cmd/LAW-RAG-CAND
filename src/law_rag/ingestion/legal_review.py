@@ -192,6 +192,36 @@ def _locate_node(nodes: Sequence[LegalNode], node_index: dict[str, int], node_id
     return node_index[node_id]
 
 
+def confirm_rule_matches(
+    result: LegalParseResult, *, reviewer_id: str, now: datetime
+) -> LegalParseResult:
+    """Sign items that did not require individual review with the approver's identity.
+
+    Rule matches at or above the review threshold never appear in the reviewer's task
+    list (docs/05), so without this step a released document would keep them as
+    ``unverified`` and the release gate could never read its metadata. Approving the
+    document therefore confirms those items on the approver's behalf; rejected items
+    are left untouched.
+    """
+    def _confirm(item):
+        if item.verification is not VerificationStatus.UNVERIFIED:
+            return item
+        return replace(
+            item,
+            verification=VerificationStatus.ACCEPTED,
+            requires_verification=False,
+            reviewer_id=reviewer_id,
+            reviewed_at=now,
+        )
+
+    return replace(
+        result,
+        metadata=tuple(_confirm(item) for item in result.metadata),
+        nodes=tuple(_confirm(node) for node in result.nodes),
+        relations=tuple(_confirm(relation) for relation in result.relations),
+    )
+
+
 def require_approval(
     result: LegalParseResult,
     *,
@@ -210,12 +240,13 @@ def require_approval(
         raise ReviewIncompleteError(f"Warnings must be acknowledged before approval: {', '.join(unacknowledged)}")
     if not result.metadata:
         raise ReviewIncompleteError("Approval requires at least one metadata assertion")
+    approved_result = confirm_rule_matches(result, reviewer_id=reviewer_id, now=now)
     return ApprovedLegalDocument(
-        job_id=result.job_id,
-        parse_result=result,
+        job_id=approved_result.job_id,
+        parse_result=approved_result,
         approved_by=reviewer_id,
         approved_at=now,
-        acknowledged_warnings=tuple(result.warnings),
+        acknowledged_warnings=tuple(approved_result.warnings),
     )
 
 

@@ -62,8 +62,23 @@ def chunk_legal_document(
     # Build node lookup
     nodes_by_id = {node.node_id: node for node in parse_result.nodes}
     
-    # Filter nodes to chunk (articles, clauses, points)
-    chunkable_nodes = [node for node in parse_result.nodes if _should_chunk_node(node)]
+    # Filter nodes to chunk (articles, clauses, points). Nodes whose text lives in
+    # their children (an article delivered through its clauses) carry no content of
+    # their own; skipping them avoids emitting an empty, unretrievable chunk.
+    chunkable_nodes = [
+        node
+        for node in parse_result.nodes
+        if _should_chunk_node(node) and node.content.strip()
+    ]
+    skipped = sum(
+        1
+        for node in parse_result.nodes
+        if _should_chunk_node(node) and not node.content.strip()
+    )
+    if skipped:
+        LOGGER.info(
+            "Skipped %d empty node(s) while chunking version_id=%s", skipped, version_id
+        )
     
     chunks: list[Chunk] = []
     chunk_set_id = f"cs_{uuid.uuid4().hex[:16]}"

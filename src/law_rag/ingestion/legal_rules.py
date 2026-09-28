@@ -40,6 +40,9 @@ DEFAULT_DOCUMENT_TYPE_VOCABULARY: tuple[str, ...] = (
 
 _DOCUMENT_NUMBER = r"[0-9]{1,4}\w*(?:[/\-][\w\.]+){1,5}"
 _DATE = r"\d{1,2}[/\-.]\d{1,2}[/\-.]\d{2,4}"
+_DATE_WORDS = r"\d{1,2}\s*tháng\s*\d{1,2}\s*năm\s*\d{4}"
+# Official documents write dates numerically or in words; both are accepted.
+_DATE_ANY = rf"(?:{_DATE_WORDS}|{_DATE})"
 _SCOPE_LABEL = r"(?:Chương|Mục|Điều|Khoản|Điểm|Phụ lục)\s+[0-9IVXLCDM]+[a-z]?"
 
 SCOPE_LABEL_PATTERN = re.compile(_SCOPE_LABEL, re.IGNORECASE)
@@ -61,7 +64,28 @@ def roman_to_int(value: str) -> int | None:
 
 
 def parse_vietnamese_date(raw: str) -> tuple[str | None, bool]:
-    """Return an ISO date and whether day/month order was ambiguous."""
+    """Return an ISO date and whether day/month order was ambiguous.
+
+    Both numeric (``15/11/2023``) and word-form (``15 tháng 11 năm 2023``) dates are
+    accepted: official documents state the date in words on the signature line, and a
+    rejected date would block the document at the review gate.
+    """
+    word_form = re.fullmatch(
+        r"(?P<day>\d{1,2})\s*tháng\s*(?P<month>\d{1,2})\s*năm\s*(?P<year>\d{4})",
+        raw.strip(),
+        re.IGNORECASE,
+    )
+    if word_form is not None:
+        day = int(word_form.group("day"))
+        month = int(word_form.group("month"))
+        year = int(word_form.group("year"))
+        if not (1 <= month <= 12 and 1 <= day <= 31):
+            return None, True
+        try:
+            # Day and month are labelled, so the order is not ambiguous.
+            return date(year, month, day).isoformat(), False
+        except ValueError:
+            return None, True
     parts = re.split(r"[/\-.]", raw.strip())
     if len(parts) != 3:
         return None, True
@@ -171,17 +195,17 @@ def default_legal_parse_config() -> LegalParseConfig:
         ),
         MetadataRule(
             MetadataField.ISSUE_DATE, "issue_date_label", 0.8, required=True, value_kind="date",
-            pattern=re.compile(rf"(?:ngày\s+ban\s+hành|ngày\s+ký|ngày)\s*[:]?\s*(?P<value>{_DATE})", re.IGNORECASE),
+            pattern=re.compile(rf"(?:ngày\s+ban\s+hành|ngày\s+ký|ngày)\s*[:]?\s*(?P<value>{_DATE_ANY})", re.IGNORECASE),
             search_scope="document",
         ),
         MetadataRule(
             MetadataField.EFFECTIVE_DATE, "effective_date_label", 0.8, value_kind="date",
-            pattern=re.compile(rf"(?:có\s+hiệu\s+lực|hiệu\s+lực\s+từ|hiệu\s+lực\s+thi\s+hanh|từ\s+ngày)\s*[:]?\s*(?P<value>{_DATE})", re.IGNORECASE),
+            pattern=re.compile(rf"(?:có\s+hiệu\s+lực|hiệu\s+lực\s+từ|hiệu\s+lực\s+thi\s+hanh|từ\s+ngày)\s*[:]?\s*(?P<value>{_DATE_ANY})", re.IGNORECASE),
             search_scope="document",
         ),
         MetadataRule(
             MetadataField.EXPIRY_DATE, "expiry_date_label", 0.75, value_kind="date",
-            pattern=re.compile(rf"(?:hết\s+hiệu\s+lực|ngừng\s+hiệu\s+lực|không\s+còn\s+hiệu\s+lực)\s*[:]?\s*(?P<value>{_DATE})", re.IGNORECASE),
+            pattern=re.compile(rf"(?:hết\s+hiệu\s+lực|ngừng\s+hiệu\s+lực|không\s+còn\s+hiệu\s+lực)\s*[:]?\s*(?P<value>{_DATE_ANY})", re.IGNORECASE),
             search_scope="document",
         ),
         MetadataRule(MetadataField.LANGUAGE, "vietnamese_diacritics", 0.9, value_kind="fixed", fixed_value="vie",

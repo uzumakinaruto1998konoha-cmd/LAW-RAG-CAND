@@ -9,9 +9,11 @@ from fastapi import APIRouter, Depends
 from law_rag.ingestion.knowledge_models import AppUser
 
 from ..container import ApiContainer, DocumentRecord
-from ..dependencies import get_container, require_permission
+from ..dependencies import get_container, get_current_user, require_permission
 from ..schemas import (
     ChunkModel,
+    CollectionListResponse,
+    CollectionModel,
     DocumentDetailResponse,
     DocumentListResponse,
     DocumentSummaryModel,
@@ -43,6 +45,33 @@ def build_document_summary(record: DocumentRecord) -> DocumentSummaryModel:
         is_verified=metadata.is_verified,
         collection_ids=list(metadata.collection_ids),
         chunk_count=len(record.chunks),
+    )
+
+
+@router.get(
+    "/collections",
+    response_model=CollectionListResponse,
+    responses=_ERRORS,
+    summary="List collections the caller can read",
+)
+def list_collections(
+    user: Annotated[AppUser, Depends(get_current_user)],
+    container: Annotated[ApiContainer, Depends(get_container)],
+) -> CollectionListResponse:
+    """Collection registry with the caller's effective access level (ACL-filtered)."""
+    entries = container.collections_for(user)
+    return CollectionListResponse(
+        count=len(entries),
+        collections=[
+            CollectionModel(
+                collection_id=collection.collection_id,
+                name=collection.collection_name,
+                description=collection.description,
+                is_public=collection.is_public,
+                access_level=level.value,
+            )
+            for collection, level in entries
+        ],
     )
 
 

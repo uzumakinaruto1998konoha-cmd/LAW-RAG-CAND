@@ -123,6 +123,21 @@ class ExtractionTests(unittest.TestCase):
         self.assertEqual([span.page_number for span in result.spans], [1, 2])
         self.assertEqual(result.text, "first page\nsecond page")
 
+    def test_text_lines_become_individual_spans(self) -> None:
+        """Line granularity is required for legal parsing of text uploads."""
+        path = self.root / "lines.txt"
+        path.write_text(
+            "Luật tổng hợp số 99/2026/SYNTH\nĐiều 1. Phạm vi điều chỉnh\n\nNội dung tổng hợp.",
+            encoding="utf-8",
+        )
+        result = extract_document(path, original_filename="lines.txt")
+        self.assertEqual(
+            [span.source_locator for span in result.spans],
+            ["page:1/line:1", "page:1/line:2", "page:1/line:4"],
+        )
+        self.assertEqual([span.text for span in result.spans][1], "Điều 1. Phạm vi điều chỉnh")
+        self.assertFalse(result.review_required)
+
     def test_extracts_image_with_ocr_and_review_threshold(self) -> None:
         path = self.root / "sample.png"
         Image.new("RGB", (200, 100), "white").save(path)

@@ -240,8 +240,33 @@ def _extract_text(path: Path) -> ExtractionResult:
     except OSError as exc:
         raise ExtractionError("Text file could not be read") from exc
     pages = text.split("\f")
-    spans = tuple(SourceSpan(index, f"page:{index}", content, None, "plain_text", None) for index, content in enumerate(pages, start=1) if content)
-    return ExtractionResult(spans, len(pages), PIPELINE_VERSION, (), (), not bool(spans), ("NO_TEXT_EXTRACTED",) if not spans else ())
+    spans: list[SourceSpan] = []
+    # One span per line: the legal parser assembles reading-order lines from spans, so
+    # a single per-page span would hide the heading and metadata structure of a text file.
+    for page_index, content in enumerate(pages, start=1):
+        for line_index, raw_line in enumerate(content.splitlines(), start=1):
+            if not raw_line.strip():
+                continue
+            spans.append(
+                SourceSpan(
+                    page_index,
+                    f"page:{page_index}/line:{line_index}",
+                    raw_line,
+                    None,
+                    "plain_text",
+                    None,
+                )
+            )
+    extracted = tuple(spans)
+    return ExtractionResult(
+        extracted,
+        len(pages),
+        PIPELINE_VERSION,
+        (),
+        (),
+        not bool(extracted),
+        ("NO_TEXT_EXTRACTED",) if not extracted else (),
+    )
 
 
 def _extract_image(path: Path, ocr: OCRProcessor | None) -> ExtractionResult:

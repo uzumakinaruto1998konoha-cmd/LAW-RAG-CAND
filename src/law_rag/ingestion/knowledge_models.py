@@ -214,13 +214,16 @@ class UserSession:
         session_id: str,
         user_id: str,
         expires_at: datetime,
+        created_at: datetime | None = None,
         ip_address: str | None = None,
         user_agent: str | None = None,
     ) -> UserSession:
         return cls(
             session_id=session_id,
             user_id=user_id,
-            created_at=datetime.now(timezone.utc),
+            # Creation time is injectable so callers (and tests) can pin a clock
+            # instead of mixing a real "now" with an explicit expiry.
+            created_at=created_at or datetime.now(timezone.utc),
             expires_at=expires_at,
             ip_address=ip_address,
             user_agent=user_agent,

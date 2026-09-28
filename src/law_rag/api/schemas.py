@@ -35,6 +35,109 @@ class ErrorEnvelope(BaseModel):
     error: ErrorDetail
 
 
+class ReviewTaskModel(BaseModel):
+    """One item a reviewer must resolve before approval (docs/05 review gate)."""
+
+    item_kind: str
+    item_id: str
+    summary: str
+    confidence: float | None = None
+
+
+class MetadataAssertionModel(BaseModel):
+    assertion_id: str
+    field: str
+    value: str
+    confidence: float
+    required: bool
+    verification: str
+    is_pending: bool
+    source_locator: str
+    page_number: int | None = None
+
+
+class NodePreviewModel(BaseModel):
+    """Parsed hierarchy node preview used as the extraction preview in the UI."""
+
+    node_id: str
+    kind: str
+    label: str
+    ordinal: str
+    title: str | None = None
+    page_numbers: list[int] = Field(default_factory=list)
+    excerpt: str
+
+
+class ReviewStateResponse(BaseModel):
+    """Reviewer view of an ingested job after extraction and parsing."""
+
+    job_id: str
+    status: str
+    original_filename: str
+    media_type: str
+    size_bytes: int
+    sha256: str
+    page_count: int | None = None
+    review_required: bool
+    tasks: list[ReviewTaskModel] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    metadata: list[MetadataAssertionModel] = Field(default_factory=list)
+    preview: list[NodePreviewModel] = Field(default_factory=list)
+    node_count: int
+    relation_count: int
+    approved_version_id: str | None = None
+
+
+class ReviewDecisionModel(BaseModel):
+    model_config = _FORBID
+
+    item_kind: Literal["metadata", "node", "relation"]
+    item_id: str = Field(min_length=1, max_length=200)
+    action: Literal["accept", "correct", "reject"]
+    value: str | None = Field(default=None, max_length=2000)
+    target_document_number: str | None = Field(default=None, max_length=200)
+    target_scope_label: str | None = Field(default=None, max_length=200)
+    comment: str | None = Field(default=None, max_length=2000)
+
+
+class ReviewDecisionRequest(BaseModel):
+    model_config = _FORBID
+
+    decisions: list[ReviewDecisionModel] = Field(min_length=1, max_length=200)
+
+
+class ApproveRequest(BaseModel):
+    """Approve a reviewed job and release it into one collection."""
+
+    model_config = _FORBID
+
+    collection_id: str = Field(min_length=1, max_length=200)
+    acknowledged_warnings: list[str] = Field(default_factory=list, max_length=100)
+
+
+class ApprovalResponse(BaseModel):
+    job_id: str
+    document_id: str
+    version_id: str
+    status: str
+    chunk_count: int
+    validity_status: str
+    warnings: list[str] = Field(default_factory=list)
+
+
+class CollectionModel(BaseModel):
+    collection_id: str
+    name: str
+    description: str | None = None
+    is_public: bool
+    access_level: str
+
+
+class CollectionListResponse(BaseModel):
+    count: int
+    collections: list[CollectionModel] = Field(default_factory=list)
+
+
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     phase: str
