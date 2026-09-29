@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from law_rag.ingestion.knowledge_models import AppUser
 
@@ -27,6 +27,10 @@ _ERRORS: dict[int | str, dict] = {
     403: {"model": ErrorEnvelope, "description": "Không đủ quyền"},
     404: {"model": ErrorEnvelope, "description": "Tài liệu không tồn tại hoặc ngoài quyền đọc"},
 }
+
+
+DEFAULT_PAGE_LIMIT = 50
+MAX_PAGE_LIMIT = 200
 
 
 def build_document_summary(record: DocumentRecord) -> DocumentSummaryModel:
@@ -84,11 +88,16 @@ def list_collections(
 def list_documents(
     user: Annotated[AppUser, Depends(require_permission("document.view"))],
     container: Annotated[ApiContainer, Depends(get_container)],
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)] = DEFAULT_PAGE_LIMIT,
+    offset: Annotated[int, Query(ge=0)] = 0,
 ) -> DocumentListResponse:
     """List only the document versions the caller is allowed to read."""
-    records = container.document_records(user)
+    total = container.count_document_records(user)
+    records = container.document_records(user, limit=limit, offset=offset)
     return DocumentListResponse(
-        count=len(records),
+        count=total,
+        limit=limit,
+        offset=offset,
         documents=[build_document_summary(record) for record in records],
     )
 

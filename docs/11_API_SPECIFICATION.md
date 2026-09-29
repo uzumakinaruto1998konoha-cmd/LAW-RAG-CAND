@@ -33,14 +33,20 @@ Prefix `/api/v1`; OpenAPI ở `/api/v1/openapi.json`, Swagger UI ở `/api/v1/do
 | POST | `/search` | `search.query` | Hybrid search, ACL trước ranking, trả `trace_id` |
 | POST | `/chat` | `chat.query` | Trả lời có căn cứ + citation do server sinh |
 | POST | `/conversations` | `chat.query` | Tạo hội thoại (201) |
+| GET | `/conversations` | `chat.query` | Liệt kê hội thoại của caller (hỗ trợ limit/offset) |
 | GET | `/conversations/{id}` | `chat.query` | Hội thoại của chính người gọi, khác → 404 |
-| GET | `/documents` | `document.view` | Danh sách tài liệu đọc được (đã lọc ACL) |
+| GET | `/documents` | `document.view` | Danh sách tài liệu đọc được (lọc ACL, limit/offset) |
 | GET | `/documents/{id}` | `document.view` | Tài liệu + chunk; ngoài quyền → 404 |
 | POST | `/documents/upload` | `document.upload` | Nạp tài liệu (202), yêu cầu `Idempotency-Key` |
 | GET | `/jobs/{job_id}` | `document.upload` hoặc `audit.view` | Trạng thái job; người khác → 404 |
+| GET | `/jobs/{job_id}/review` | `document.edit_metadata` | Xem metadata và quan hệ chờ thẩm định |
+| POST | `/jobs/{job_id}/review` | `document.edit_metadata` | Cập nhật điều chỉnh metadata/quan hệ sau thẩm định |
+| POST | `/jobs/{job_id}/approve` | `document.approve` | Ký duyệt phát hành (release) văn bản vào kho tri thức |
+| POST | `/jobs/{job_id}/retry` | `document.upload` | Thử lại job xử lý bị lỗi |
+| GET | `/collections` | đã xác thực | Danh sách collection và cấp độ quyền của user |
 | GET | `/traces/{trace_id}` | chủ trace hoặc `audit.view` | Audit truy vấn (chỉ chunk id, không trả nội dung) |
 
-Xác thực: header `Authorization: Bearer <token>`; server chỉ giữ SHA-256 của token và map sang `AppUser`. RBAC deny-by-default theo ma trận vai trò có thể ghi đè khi triển khai. Phân trang, rate limit và `Idempotency-Key` cho endpoint khác vẫn TBD; danh sách tài liệu hiện trả toàn bộ kết quả đọc được và sẽ bổ sung `limit/offset` ở contract khóa.
+Xác thực: header `Authorization: Bearer <token>`; server chỉ giữ SHA-256 của token và map sang `AppUser`. RBAC deny-by-default theo ma trận vai trò có thể ghi đè khi triển khai. Phân trang `limit` & `offset` đã được hiện thực cho `/documents` và `/conversations`.
 
 Upload transport tạm thời: body thô là nội dung file, `filename` ở query, `Idempotency-Key` ở header; giới hạn kích thước được kiểm tra khi đọc stream (413) trước khi ghi blob. `document_id`/`version_id` là `null` cho tới khi version được duyệt và release, nên nội dung chưa duyệt không có địa chỉ để truy cập.
 

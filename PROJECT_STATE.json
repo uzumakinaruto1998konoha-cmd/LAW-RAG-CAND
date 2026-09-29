@@ -1,7 +1,7 @@
 {
   "project_name": "LAW-RAG-CAND",
-  "current_phase": "PHASE 5 — Web Application / API",
-  "current_task": "Completed the PHASE 5 web app (React 18 + TypeScript + Vite) against the /api/v1 contract: search and chat with citations/warnings/insufficient-evidence states, conversation list, document list/detail with chunk structure, retrieval trace audit view, admin upload + job polling, health/readiness; tsc -b + vite build, ESLint and 36 Vitest component/unit tests all pass",
+  "current_phase": "PHASE 5 — Web Application / API (Completed) & Operational Readiness",
+  "current_task": "Hoàn thiện hệ thống runnable hoàn chỉnh: Ingestion pipeline end-to-end, endpoint GET /conversations và phân trang documents, kết nối frontend ConversationsPage, mount SPA trên FastAPI, cung cấp bootstrap.example.json và script run_app.py; 220 backend tests và 38 frontend tests pass 100%",
   "completed_tasks": [
     "Create the 18 requested Phase 0 specification and planning documents",
     "Cross-check requirements, dependencies, contradictions, and undecided architecture choices",
@@ -15,19 +15,18 @@
     "Implement PHASE 3 index infrastructure: legal-aware chunking, chunk storage, index manifests with versioning, retrieval traces",
     "Implement PHASE 3 Retrieval: hybrid search (BM25 + vector), fusion algorithms, ACL filtering, reranking, and evidence conversion",
     "Implement PHASE 4 RAG: Grounded answer generation, insufficient evidence detection, server-side citation generation, conversation management",
-    "Implement PHASE 5 API backend: FastAPI /api/v1 endpoints (search, chat, conversations, documents, upload, jobs, traces, health) with bearer-token authentication, deny-by-default RBAC + collection ACL, and the standard error envelope",
-    "Implement PHASE 5 Web app: search/chat screens with evidence UX, conversation list, document list/detail, trace audit view, admin upload + job polling, health/readiness, Tailwind stylesheet, permission-gated screens and explicit pending-API states; Vitest + React Testing Library suite"
+    "Implement PHASE 5 API backend: FastAPI /api/v1 endpoints (search, chat, conversations, documents, upload, jobs, traces, health, review, approve, retry, collections) with bearer-token authentication, deny-by-default RBAC + collection ACL, pagination, and the standard error envelope",
+    "Implement PHASE 5 Web app: search/chat screens with evidence UX, conversation list, document list/detail, trace audit view, admin upload + job polling, health/readiness, Tailwind stylesheet, permission-gated screens and explicit pending-API states; Vitest + React Testing Library suite",
+    "Wire ingestion pipeline end-to-end: extraction -> legal parsing -> review parking -> approval -> release -> chunking -> indexing",
+    "Implement bootstrap configuration (config/bootstrap.example.json) and unified execution script (scripts/run_app.py) serving both API and Web UI SPA on port 8000"
   ],
   "pending_tasks": [
-    "Run approved ingestion corpus testing and retrieval benchmark",
-    "Expose ingestion review/approve, index manifest, user/role and audit-list endpoints so the PHASE 5 Admin UI can manage them (PHASE 6-8)",
-    "Provide a dev/deployment bootstrap that provisions users, roles, collections and tokens for the web UI (tokens generated at runtime, never in source)",
-    "Wire API endpoints to PostgreSQL, Qdrant and Ollama for deployment (PHASE 6-8)",
-    "Lock API contract details still TBD: pagination, rate limits, MFA/SSO, official upload transport",
-    "PHASE 6-8: Security hardening, Quality assurance, Operations"
+    "Run approved ingestion corpus testing and retrieval benchmark (PHASE 7)",
+    "Wire API endpoints to PostgreSQL, Qdrant and Ollama for external service deployment (PHASE 6-8)",
+    "PHASE 6-8: Security hardening, Quality assurance, Operations (Docker Compose, backup/restore runbook)"
   ],
   "blockers": [],
-  "architecture_version": "1.1-retrieval-rag-api",
-  "last_change": "2026-09-29: Completed the PHASE 5 web app (frontend/): React 18 + TypeScript + Vite 6 + Tailwind 3 + react-query 5; screens for search (hybrid/lexical/semantic + metadata filters), chat (citations, evidence, warnings, insufficient-evidence and permission states), conversations (browser-local index + authorized reads), documents list/detail (chunks, validity, ACL collections), trace audit, admin (raw-body upload with Idempotency-Key + job polling, KB overview, pending-API disclosure) and health/readiness; fixed AuthProvider not being mounted, missing Tailwind entry, and react-query v5 query options; added Vitest + React Testing Library (36 tests, 9 files); pinned dependencies in package-lock.json; npm run build, npm run lint and npm test pass",
-  "next_action": "Choose next task: run the approved corpus ingestion/retrieval benchmark, or expose the review/admin endpoints so the Phase 5 Admin UI can finish ingestion review and KB management"
+  "architecture_version": "1.2-ingestion-pipeline",
+  "last_change": "2026-09-29: Hoàn thiện hệ thống runnable hoàn chỉnh: (1) Bổ sung GET /conversations và phân trang limit/offset cho /documents và /conversations trên /api/v1; (2) Tích hợp frontend ConversationsPage gọi API server trực tiếp; (3) Mount SPA static bundle từ frontend/dist vào FastAPI khi khởi chạy; (4) Thêm config/bootstrap.example.json và scripts/run_app.py / run_dev.ps1 khởi chạy toàn bộ hệ thống API + Web UI; (5) Toàn bộ 220 backend tests (unittest) và 38 frontend tests (vitest) pass 100%, lint và build đạt",
+  "next_action": "Thực hiện kiểm thử benchmark bộ ngữ liệu pháp luật (PHASE 7) hoặc đóng gói Dockerfile / Docker Compose cho vận hành offline (PHASE 8)"
 }

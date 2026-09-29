@@ -1,0 +1,96 @@
+{
+  "users": [
+    {
+      "user_id": "u_system",
+      "username": "sysadmin",
+      "email": "sysadmin@cand.gov.vn",
+      "display_name": "Quản trị hệ thống",
+      "roles": ["system_admin"],
+      "token_env": "LAW_RAG_TOKEN_SYSADMIN",
+      "is_system": true
+    },
+    {
+      "user_id": "u_admin",
+      "username": "kbadmin",
+      "email": "kbadmin@cand.gov.vn",
+      "display_name": "Quản trị tri thức",
+      "roles": ["knowledge_admin"],
+      "token_env": "LAW_RAG_TOKEN_KBADMIN"
+    },
+    {
+      "user_id": "u_reviewer",
+      "username": "reviewer",
+      "email": "reviewer@cand.gov.vn",
+      "display_name": "Chuyên viên thẩm định pháp lý",
+      "roles": ["reviewer"],
+      "token_env": "LAW_RAG_TOKEN_REVIEWER"
+    },
+    {
+      "user_id": "u_user",
+      "username": "officer",
+      "email": "officer@cand.gov.vn",
+      "display_name": "Cán bộ tra cứu",
+      "roles": ["user"],
+      "token_env": "LAW_RAG_TOKEN_USER"
+    },
+    {
+      "user_id": "u_auditor",
+      "username": "auditor",
+      "email": "auditor@cand.gov.vn",
+      "display_name": "Kiểm toán viên an ninh",
+      "roles": ["auditor"],
+      "token_env": "LAW_RAG_TOKEN_AUDITOR"
+    }
+  ],
+  "collections": [
+    {
+      "collection_id": "coll_public",
+      "name": "Văn bản pháp luật công khai",
+      "description": "Văn bản quy phạm pháp luật công khai (Luật, Nghị định, Thông tư)",
+      "is_public": true
+    },
+    {
+      "collection_id": "coll_cand_internal",
+      "name": "Văn bản nghiệp vụ CAND",
+      "description": "Chỉ đạo điều hành và nghiệp vụ nội bộ lực lượng CAND",
+      "is_public": false
+    },
+    {
+      "collection_id": "coll_restricted",
+      "name": "Tài liệu kiểm soát hạn chế",
+      "description": "Tài liệu đặc thù giới hạn thẩm định viên và quản trị viên",
+      "is_public": false
+    }
+  ],
+  "grants": [
+    {
+      "user_id": "u_user",
+      "collection_id": "coll_cand_internal",
+      "access_level": "read"
+    },
+    {
+      "user_id": "u_reviewer",
+      "collection_id": "coll_cand_internal",
+      "access_level": "read"
+    },
+    {
+      "user_id": "u_reviewer",
+      "collection_id": "coll_restricted",
+      "access_level": "read"
+    },
+    {
+      "user_id": "u_admin",
+      "collection_id": "coll_cand_internal",
+      "access_level": "admin"
+    },
+    {
+      "user_id": "u_admin",
+      "collection_id": "coll_restricted",
+      "access_level": "admin"
+    }
+  ],
+  "blob_dir": "data/blobs",
+  "ocr_enabled": false,
+  "tesseract_executable": "tesseract",
+  "ocr_language": "vie"
+}

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 
 from law_rag.ingestion.knowledge_models import AppUser
 from law_rag.rag.models import Citation, Conversation, Evidence, Message, RAGResponse
@@ -16,6 +16,7 @@ from ..schemas import (
     ChatResponse,
     ConversationCreateRequest,
     ConversationDetailResponse,
+    ConversationListResponse,
     ConversationModel,
     ErrorEnvelope,
     EvidenceModel,
@@ -75,6 +76,10 @@ def build_citations(citations: tuple[Citation, ...]) -> list[CitationModel]:
         )
         for item in citations
     ]
+
+
+DEFAULT_PAGE_LIMIT = 50
+MAX_PAGE_LIMIT = 200
 
 
 def build_conversation(conversation: Conversation) -> ConversationModel:
@@ -148,6 +153,28 @@ def create_conversation(
     container: Annotated[ApiContainer, Depends(get_container)],
 ) -> ConversationModel:
     return build_conversation(container.create_conversation(user=user, title=payload.title))
+
+
+@router.get(
+    "/conversations",
+    response_model=ConversationListResponse,
+    responses=_ERRORS,
+    summary="List the caller's conversations",
+)
+def list_conversations(
+    user: Annotated[AppUser, Depends(require_permission("chat.query"))],
+    container: Annotated[ApiContainer, Depends(get_container)],
+    limit: Annotated[int, Query(ge=1, le=MAX_PAGE_LIMIT)] = DEFAULT_PAGE_LIMIT,
+    offset: Annotated[int, Query(ge=0)] = 0,
+) -> ConversationListResponse:
+    """Only the caller's own conversations are returned; other users' ids stay invisible."""
+    conversations, total = container.conversations_for(user=user, limit=limit, offset=offset)
+    return ConversationListResponse(
+        count=total,
+        limit=limit,
+        offset=offset,
+        conversations=[build_conversation(conversation) for conversation in conversations],
+    )
 
 
 @router.get(

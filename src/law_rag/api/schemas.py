@@ -266,6 +266,15 @@ class MessageModel(BaseModel):
     created_at: datetime
 
 
+class ConversationListResponse(BaseModel):
+    """One page of the caller's conversations; ``count`` is the total."""
+
+    count: int
+    limit: int
+    offset: int
+    conversations: list[ConversationModel]
+
+
 class ConversationDetailResponse(BaseModel):
     conversation: ConversationModel
     messages: list[MessageModel]
@@ -308,7 +317,11 @@ class DocumentSummaryModel(BaseModel):
 
 
 class DocumentListResponse(BaseModel):
+    """One page of readable versions; ``count`` is the total before pagination."""
+
     count: int
+    limit: int
+    offset: int
     documents: list[DocumentSummaryModel]
 
 

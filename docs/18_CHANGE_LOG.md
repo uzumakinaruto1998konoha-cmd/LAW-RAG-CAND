@@ -109,3 +109,24 @@
 - Cập nhật ADR-019 (web app layer), task board (Web app Done, Admin UI In Progress), project state. Chưa chạy được test Python trong phiên này (môi trường không có pytest) nên không xác minh lại 189 test backend.
 - Task tiếp theo: chạy benchmark corpus đã duyệt, hoặc mở endpoint review/approve + index manifest để hoàn tất PHASE 5 Admin UI.
 
+## 2026-09-29 — Ingestion pipeline end-to-end (upload → review → release → index)
+- Bổ sung `IngestionPipeline` (`src/law_rag/ingestion/pipeline.py`): kết nối toàn bộ chuỗi trích xuất (extraction) với OCR cục bộ cho tệp hình ảnh -> phân tích bóc tách pháp lý (legal parsing) -> đưa vào hàng chờ thẩm định (review parking) -> chuyên viên thẩm định và phê duyệt (approval) -> phát hành vào kho tri thức (release) -> chia chunk (chunking) -> lập chỉ mục tìm kiếm (indexing).
+- Bổ sung các endpoint thẩm định & phát hành trên `/api/v1`: `GET /jobs/{id}/review`, `POST /jobs/{id}/review`, `POST /jobs/{id}/approve`, `POST /jobs/{id}/retry` và `GET /collections`. Xử lý tác vụ nền sau khi upload tệp để cập nhật tiến trình thực tế.
+- Bổ sung `bootstrap.py` (`src/law_rag/api/bootstrap.py`): nạp cấu hình người dùng, vai trò RBAC, bộ sưu tập (collections), phân quyền truy cập (grants) từ tệp JSON và biến môi trường; sinh token ngẫu nhiên an toàn một lần tại runtime (tuân thủ tuyệt đối AGENTS.md §5, không hard-code credentials).
+- Thêm adapters in-memory `LegalParse` và `KnowledgeBase` phục vụ kiểm thử và chạy độc lập (offline local profile).
+- Sửa lỗi định dạng văn bản: ngắt dòng cho văn bản thuần, hỗ trợ số hiệu văn bản và trích yếu cùng dòng, nhận diện ngày tháng tiếng Việt dạng chữ ("ngày 15 tháng 11 năm 2023"), bỏ qua các nút chỉ chứa con khi chunking.
+- Thêm 26 integration tests trong `tests/test_ingestion_pipeline.py`; toàn bộ 215 tests backend pass 100%.
+
+## 2026-09-29 — Hoàn thiện hệ thống runnable hoàn chỉnh (API, Web SPA, Bootstrap & Scripts)
+- Bổ sung endpoint `GET /conversations` với phân trang `limit` và `offset`: cho phép người dùng liệt kê toàn bộ các phiên hội thoại của chính mình theo thứ tự thời gian mới nhất; đảm bảo cách ly tuyệt đối giữa các người dùng (deny-by-default, không tiết lộ ID hội thoại của người khác).
+- Bổ sung phân trang `limit` và `offset` cho `GET /documents`, trả về tổng số bản ghi hợp lệ (`count`) kèm dữ liệu trang.
+- Cập nhật frontend:
+  - Thêm hook `useConversations(limit, offset)` trong `src/shared/api/useChat.ts`.
+  - Nâng cấp `ConversationsPage.tsx` kết nối trực tiếp với backend `GET /conversations`, hiển thị danh sách hội thoại từ server, thời gian cập nhật, trạng thái lưu trữ và liên kết mở hội thoại; loại bỏ cảnh báo "chưa có endpoint".
+  - Thêm bộ test `src/pages/__tests__/ConversationsPage.test.tsx`; toàn bộ 38 frontend tests pass 100%.
+- Phục vụ Web SPA trực tiếp từ FastAPI: khi thư mục `frontend/dist` tồn tại, FastAPI tự động mount `/assets` và route SPA fallback tại `/`, giúp toàn bộ hệ thống (cả Web UI và API Backend) có thể khởi chạy và sử dụng ngay lập tức chỉ trên một cổng duy nhất (8000).
+- Cung cấp cấu hình mẫu chuẩn `config/bootstrap.example.json` với 5 vai trò chuẩn RBAC (`system_admin`, `knowledge_admin`, `reviewer`, `user`, `auditor`), 3 bộ sưu tập phân quyền và phân quyền mẫu.
+- Cung cấp script khởi chạy tiện dụng `scripts/run_app.py` và `scripts/run_dev.ps1` tự động nạp bootstrap config, in token an toàn tại runtime và khởi động máy chủ phục vụ đồng thời cả API và Web UI tại `http://127.0.0.1:8000`.
+- Thêm unit test xác minh nạp cấu hình bootstrap và phục vụ SPA root trong `tests/test_api.py` và `tests/test_ingestion_pipeline.py`; toàn bộ 220 backend tests và 38 frontend tests pass 100%, TypeScript compilation và ESLint đạt 0 lỗi.
+
+

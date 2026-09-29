@@ -23,6 +23,7 @@ from law_rag.api.bootstrap import (
     BootstrapUser,
     build_container,
     config_from_env,
+    load_config_file,
     parse_config,
 )
 from law_rag.ingestion.knowledge_models import ValidityStatus
@@ -428,6 +429,19 @@ class IngestionPipelineApiTests(unittest.TestCase):
         self.assertIn("review_metadata", actions)
         self.assertIn("approve_document", actions)
         self.assertIn("release_document", actions)
+
+    def test_14_example_bootstrap_config_is_valid(self) -> None:
+        """The shipping config/bootstrap.example.json must parse and bootstrap cleanly."""
+        example_path = Path(__file__).resolve().parents[1] / "config" / "bootstrap.example.json"
+        self.assertTrue(example_path.is_file(), f"Missing config file: {example_path}")
+        config = load_config_file(example_path)
+        self.assertEqual(len(config.users), 5)
+        self.assertEqual(len(config.collections), 3)
+        self.assertEqual(len(config.grants), 5)
+        result = build_container(config)
+        self.assertIsNotNone(result.container)
+        self.assertEqual(len(result.tokens), 5)
+
 
 
 if __name__ == "__main__":

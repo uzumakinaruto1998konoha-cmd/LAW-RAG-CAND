@@ -207,7 +207,9 @@ class ApiContainer:
     def metadata_for_version(self, version_id: str) -> DocumentMetadata | None:
         return self.retrieval.metadata_for_version(version_id)
 
-    def document_records(self, user: AppUser) -> tuple[DocumentRecord, ...]:
+    def document_records(
+        self, user: AppUser, *, limit: int | None = None, offset: int = 0
+    ) -> tuple[DocumentRecord, ...]:
         """Document versions the user may read, most recently issued first."""
         records = [
             DocumentRecord(
@@ -221,7 +223,13 @@ class ApiContainer:
             key=lambda record: (record.metadata.issue_date, record.metadata.version_id),
             reverse=True,
         )
-        return tuple(records)
+        if limit is None:
+            return tuple(records)
+        return tuple(records[offset : offset + limit])
+
+    def count_document_records(self, user: AppUser) -> int:
+        """Total number of released versions the user may read (for pagination)."""
+        return len(self.document_records(user))
 
     def document_record(self, user: AppUser, document_id: str) -> DocumentRecord:
         """Readable version of a document, else 404 without revealing existence."""
@@ -358,6 +366,17 @@ class ApiContainer:
         if conversation is None or conversation.user_id != user.user_id:
             raise ResourceNotFoundApiError(f"Conversation {conversation_id} was not found.")
         return conversation
+
+    def conversations_for(
+        self, *, user: AppUser, limit: int = 50, offset: int = 0
+    ) -> tuple[tuple[Conversation, ...], int]:
+        """The caller's own conversations, newest first, plus the total count."""
+        owned = sorted(
+            (item for item in self._conversations.values() if item.user_id == user.user_id),
+            key=lambda item: item.updated_at,
+            reverse=True,
+        )
+        return tuple(owned[offset : offset + limit]), len(owned)
 
     def messages_for(self, *, user: AppUser, conversation_id: str) -> tuple[Message, ...]:
         self.conversation_for(user=user, conversation_id=conversation_id)

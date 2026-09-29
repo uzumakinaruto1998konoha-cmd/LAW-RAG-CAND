@@ -89,6 +89,13 @@ export interface ConversationDetailResponse {
   messages: MessageModel[];
 }
 
+export interface ConversationListResponse {
+  count: number;
+  limit: number;
+  offset: number;
+  conversations: ConversationModel[];
+}
+
 export function useCreateConversation() {
   return useMutation({
     mutationFn: (payload: { title?: string | null }) =>
@@ -101,5 +108,12 @@ export function useConversation(id: string | null) {
     queryKey: ["conversation", id],
     queryFn: () => get<ConversationDetailResponse>(`/conversations/${id}`),
     enabled: !!id,
+  });
+}
+
+export function useConversations(limit = 50, offset = 0) {
+  return useQuery({
+    queryKey: ["conversations", limit, offset],
+    queryFn: () => get<ConversationListResponse>(`/conversations?limit=${limit}&offset=${offset}`),
   });
 }

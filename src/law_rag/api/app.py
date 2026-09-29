@@ -10,6 +10,7 @@ Conventions implemented here:
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 import uuid
 from collections.abc import Awaitable, Callable
 
@@ -110,4 +111,30 @@ def create_app(container: ApiContainer | None = None) -> FastAPI:
     app.include_router(chat.router, prefix=API_PREFIX)
     app.include_router(documents.router, prefix=API_PREFIX)
     app.include_router(ingestion.router, prefix=API_PREFIX)
+
+    dist_dir = Path(__file__).resolve().parents[3] / "frontend" / "dist"
+    if dist_dir.is_dir():
+        from fastapi.responses import FileResponse
+        from starlette.staticfiles import StaticFiles
+
+        assets_dir = dist_dir / "assets"
+        if assets_dir.is_dir():
+            app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+        @app.get("/{full_path:path}", include_in_schema=False)
+        async def serve_spa(request: Request, full_path: str):
+            if full_path.startswith("api/"):
+                return JSONResponse(
+                    status_code=404,
+                    content=error_body(
+                        ApiError("Endpoint API không tồn tại."),
+                        getattr(request.state, "request_id", "-"),
+                    ),
+                )
+            file_path = dist_dir / full_path
+            if full_path and file_path.is_file():
+                return FileResponse(file_path)
+            return FileResponse(dist_dir / "index.html")
+
     return app
+

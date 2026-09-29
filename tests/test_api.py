@@ -250,6 +250,13 @@ class OperationsApiTests(ApiTestCase):
         response = self.client.get(f"{API}/health", headers={"X-Request-ID": "req-test-1"})
         self.assertEqual(response.headers.get("X-Request-ID"), "req-test-1")
 
+    def test_spa_root_and_static_serving(self) -> None:
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("text/html", response.headers.get("content-type", ""))
+        self.assertIn("LAW-RAG", response.text)
+
+
 
 class AuthenticationApiTests(ApiTestCase):
     def test_missing_token_returns_401_envelope(self) -> None:
@@ -405,6 +412,16 @@ class DocumentsApiTests(ApiTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["document"]["collection_ids"], ["coll_restricted"])
 
+    def test_document_list_supports_pagination(self) -> None:
+        response = self.client.get(f"{API}/documents?limit=1&offset=0", headers=_auth("u_user"))
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["limit"], 1)
+        self.assertEqual(body["offset"], 0)
+        self.assertLessEqual(len(body["documents"]), 1)
+        self.assertGreaterEqual(body["count"], len(body["documents"]))
+
+
 
 class ChatApiTests(ApiTestCase):
     def test_chat_returns_grounded_answer_with_server_citations(self) -> None:
@@ -483,6 +500,35 @@ class ChatApiTests(ApiTestCase):
         forbidden = self.client.get(f"{API}/conversations/{conversation_id}", headers=_auth("u_user"))
         self.assertEqual(forbidden.status_code, 404)
         self.assertEqual(forbidden.json()["error"]["code"], "RESOURCE_NOT_FOUND")
+
+    def test_conversation_list_returns_owned_conversations_with_pagination(self) -> None:
+        c1 = self.client.post(
+            f"{API}/conversations", json={"title": "Hội thoại 1"}, headers=_auth("u_user")
+        ).json()["conversation_id"]
+        c2 = self.client.post(
+            f"{API}/conversations", json={"title": "Hội thoại 2"}, headers=_auth("u_user")
+        ).json()["conversation_id"]
+        c_rev = self.client.post(
+            f"{API}/conversations", json={"title": "Hội thoại Reviewer"}, headers=_auth("u_reviewer")
+        ).json()["conversation_id"]
+
+        response = self.client.get(f"{API}/conversations", headers=_auth("u_user"))
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        ids = [item["conversation_id"] for item in body["conversations"]]
+        self.assertIn(c1, ids)
+        self.assertIn(c2, ids)
+        self.assertNotIn(c_rev, ids)
+        self.assertEqual(body["count"], len(body["conversations"]))
+
+        page = self.client.get(f"{API}/conversations?limit=1&offset=0", headers=_auth("u_user")).json()
+        self.assertEqual(page["limit"], 1)
+        self.assertEqual(len(page["conversations"]), 1)
+        self.assertEqual(page["count"], body["count"])
+
+    def test_conversation_list_without_permission_returns_403(self) -> None:
+        response = self.client.get(f"{API}/conversations", headers=_auth("u_stranger"))
+        self.assertEqual(response.status_code, 403)
 
     def test_chat_without_permission_returns_403(self) -> None:
         response = self.client.post(
