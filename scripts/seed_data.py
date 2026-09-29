@@ -91,46 +91,44 @@ def seed_sample_corpus(container: ApiContainer) -> int:
 
     for filename, content, collection_id, key in documents:
         try:
-            job = container.ingestion.upload_stream(
-                stream=io.BytesIO(content.encode("utf-8")),
+            receipt = container.ingestion_service.upload(
                 filename=filename,
-                media_type="text/plain",
+                stream=io.BytesIO(content.encode("utf-8")),
+                idempotency_key=key,
                 uploader_id=admin_user.user_id,
                 source="seed_corpus",
-                idempotency_key=key,
             )
-            # Chạy qua các bước trích xuất, phân tích và duyệt phát hành
-            container.pipeline.extract_job(job)
-            container.pipeline.parse_job(job)
+            job_id = receipt.job.job_id
+            outcome = container.pipeline.process(job_id)
 
-            # Lấy các cảnh báo nếu có để chấp nhận khi phê duyệt
-            review_state = container.pipeline.legal_repo.get(job.job_id)
-            warnings = list(review_state.warnings) if review_state else []
+            from law_rag.ingestion.legal_review import (
+                ReviewAction,
+                ReviewDecision,
+                ReviewItemKind,
+                pending_tasks,
+            )
+            latest = container.pipeline.legal_repository.get_latest(job_id)
+            if latest:
+                tasks = pending_tasks(latest)
+                if tasks:
+                    decisions = [
+                        ReviewDecision(
+                            item_kind=t.item_kind,
+                            item_id=t.item_id,
+                            action=ReviewAction.REJECT if t.item_kind == ReviewItemKind.RELATION else ReviewAction.ACCEPT,
+                            reviewer_id=reviewer_user.user_id,
+                        )
+                        for t in tasks
+                    ]
+                    container.pipeline.submit_decisions(job_id, decisions)
 
-            # Giải quyết các tác vụ thẩm định chờ
-            tasks = container.pipeline.legal_review.pending_tasks_for(job.job_id)
-            if tasks:
-                from law_rag.ingestion.legal_review import ReviewDecision
-                decisions = [
-                    ReviewDecision(
-                        task_id=task.task_id,
-                        item_kind=task.item_kind,
-                        item_id=task.item_id,
-                        action="reject" if task.item_kind.value == "relation" else "accept",
-                    )
-                    for task in tasks
-                ]
-                container.pipeline.apply_review(
-                    job_id=job.job_id,
-                    reviewer=reviewer_user,
-                    decisions=decisions,
-                )
 
-            container.pipeline.approve_job(
-                job_id=job.job_id,
-                approver=reviewer_user,
+            container.pipeline.approve(
+                job_id,
+                reviewer_id=reviewer_user.user_id,
+                acknowledged_warnings=outcome.warnings,
+                released_by=reviewer_user.user_id,
                 collection_id=collection_id,
-                acknowledged_warnings=warnings,
             )
             count += 1
             LOGGER.info("Seeded sample document: %s into collection %s", filename, collection_id)
@@ -138,3 +136,4 @@ def seed_sample_corpus(container: ApiContainer) -> int:
             LOGGER.warning("Could not seed %s: %s", filename, exc)
 
     return count
+

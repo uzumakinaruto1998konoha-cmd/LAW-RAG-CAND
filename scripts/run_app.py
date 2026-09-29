@@ -19,9 +19,11 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-# Thêm thư mục src vào PYTHONPATH
+# Thêm thư mục src và root vào PYTHONPATH
 ROOT_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT_DIR / "src"))
+sys.path.insert(0, str(ROOT_DIR))
+
 
 import uvicorn
 from law_rag.api.app import create_app
