@@ -51,6 +51,18 @@ def main() -> None:
     host = os.environ.get("LAW_RAG_API_HOST", "127.0.0.1")
     port = int(os.environ.get("LAW_RAG_API_PORT", "8000"))
 
+    import socket
+    test_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        test_sock.bind((host, port))
+        test_sock.close()
+    except OSError:
+        print(f"\n[LỖI] Cổng {port} trên {host} đang bị chiếm dụng bởi tiến trình khác.")
+        print(f"Để khắc phục, bạn có thể:")
+        print(f"  1. Chạy .\\scripts\\run_dev.ps1 để tự động giải phóng cổng.")
+        print(f"  2. Đổi cổng khác qua biến môi trường: $env:LAW_RAG_API_PORT=8080 rồi chạy lại.\n")
+        sys.exit(1)
+
     print(f"Hệ thống đang hoạt động tại: http://{host}:{port}")
     print(f"Tài liệu API (OpenAPI/Swagger): http://{host}:{port}/api/v1/docs")
     print(f"Giao diện Web UI (SPA): http://{host}:{port}/")
