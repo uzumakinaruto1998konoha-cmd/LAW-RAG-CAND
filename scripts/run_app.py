@@ -44,7 +44,25 @@ def main() -> None:
 
     print("\n--- DANH SÁCH TÀI KHOẢN VÀ BEARER TOKEN TẠI RUNTIME ---")
     print_generated_tokens(result)
-    print("Lưu ý: Lưu lại các token trên để đăng nhập trên giao diện Web UI.\n")
+
+    # Lưu token ra file cục bộ để tiện sao chép (đã thêm vào .gitignore)
+    token_file = ROOT_DIR / ".law_rag_tokens.txt"
+    with open(token_file, "w", encoding="utf-8") as f:
+        f.write("# LAW-RAG-CAND RUNTIME TOKENS (TỰ ĐỘNG SINH KHI KHỞI CHẠY)\n")
+        f.write("# Dùng các token này để đăng nhập tại: http://127.0.0.1:8000/dev/login\n\n")
+        for u in config.users:
+            tok = result.tokens.get(u.user_id, "")
+            f.write(f"Tài khoản: {u.username} ({u.display_name}) - Vai trò: {', '.join(u.roles)}\n")
+            f.write(f"User ID:   {u.user_id}\n")
+            f.write(f"Token:     {tok}\n\n")
+    print(f"-> Đã lưu danh sách token vào file: {token_file}")
+    print("   (Bạn có thể mở file này để sao chép token bất cứ lúc nào)\n")
+
+    # Tự động nạp văn bản pháp luật mẫu vào kho tri thức
+    from scripts.seed_data import seed_sample_corpus
+    print("Đang nạp văn bản pháp luật mẫu vào kho tri thức...")
+    seeded_count = seed_sample_corpus(result.container)
+    print(f"-> Đã nạp thành công {seeded_count} văn bản pháp luật mẫu (Luật GTĐB 2024, Luật Căn cước 2023).\n")
 
     app = create_app(result.container)
 

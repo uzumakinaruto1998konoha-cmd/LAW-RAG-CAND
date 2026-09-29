@@ -3,3 +3,10 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+data/
+*.token
+*.local
+.env
+.env.*
+.law_rag_tokens.txt
+
